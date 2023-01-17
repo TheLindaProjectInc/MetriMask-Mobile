@@ -30,7 +30,7 @@ const SEND_TO_EVM_ERROR              = "It's not possible to send to an EVM addr
 
 type ItemTypePlus = ItemType<string> & { decimals : number; };
 
-const feerates = [ 225000000, 300000000, 375000000, ];
+const feerates = [ 226000000, 350000000, 500000000, ];
 const feerateDD : ItemType<number>[] =
     [
     { label: "Normal",  value: 0 },
