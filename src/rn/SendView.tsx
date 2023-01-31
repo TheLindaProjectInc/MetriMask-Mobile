@@ -1,7 +1,7 @@
 import "../../shimWrapper.js";
 
 import React, { useState, useEffect } from "react";
-import { NativeSyntheticEvent, Text, TextInputEndEditingEventData, View } from "react-native";
+import { GestureResponderEvent, Keyboard, NativeSyntheticEvent, Text, TextInputEndEditingEventData, View } from "react-native";
 import DropDownPicker, { ItemType, ValueType} from 'react-native-dropdown-picker';
 import { useNavigation } from "@react-navigation/native";
 import toBigInteger, { BigInteger } from "big-integer";
@@ -407,6 +407,13 @@ export function SendView(props : SendViewProps) : JSX.Element
         if (trimmedToAddr.length != toAddr.length) onChangeToAddr(trimmedToAddr);
         }
 
+    function onGeneralTouch(evt : GestureResponderEvent) : boolean
+        {
+        Keyboard.dismiss();
+        clearError();
+        return true;
+        }
+
     function clearError() : void
         {
         loadCount++;
@@ -464,7 +471,7 @@ export function SendView(props : SendViewProps) : JSX.Element
         }
 
     return (
-        <View style = { commonStyles.containingView }>
+        <View style={ commonStyles.containingView } onStartShouldSetResponder={ onGeneralTouch }>
             <TitleBar title="Send" onBurgerPressed={ onBurgerPressed }/>
             <View style={ commonStyles.horizontalBar }/>
             <View style={ commonStyles.squeezed }>
