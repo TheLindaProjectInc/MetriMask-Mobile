@@ -137,7 +137,16 @@ to
 
     import App from './src/rn/MainView';
 
+
 #### STEP 8)
+
+Edit shim.js and add the following line.
+
+
+    if (typeof BigInt === 'undefined') global.BigInt = require('big-integer')
+
+
+#### STEP 9)
 
 Edit node_modules/react-native/Libraries/Lists/FlatList.js.
 
@@ -456,7 +465,7 @@ to the existing buildscript.dependencies section already in the file (just above
         }
     }
     
-#### STEP 10a)
+#### STEP 11a)
 
 Edit android/app/build.gradle and, if necessary, change enableHermes: false to enableHermes: true in the existing project.ext.react section in the file. Afterwards it should look similar to this.
     
@@ -482,7 +491,7 @@ Next, add the following line at the end of android/app/build.gradle (not inside 
 
     apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 
-#### STEP 11a)
+#### STEP 12a)
 
 Edit android/app/src/main/AndroidManifest.xml.
 
@@ -523,7 +532,7 @@ Add the intent filter
 
 to android/app/src/main/AndroidManifest.xml, immediately after the existing intent filter.
 
-#### STEP 12a)
+#### STEP 13a)
 
 Edit android/app/src/main/res/values/strings.xml. Set the android app name by setting the value of the "app_name" string. Leave any other strings intact.
 
@@ -539,7 +548,7 @@ to
         <string name="app_name">MetriMask</string>
     </resources>
 
-#### STEP 13a)
+#### STEP 14a)
     
 Edit node_modules/react-native-os/android/build.gradle, change
 
@@ -553,7 +562,7 @@ to
         implementation 'com.facebook.react:react-native:+'
     }
 
-#### STEP 14a)
+#### STEP 15a)
 
 Edit node_modules/react-native-tcp/android/build.gradle, change
 
@@ -569,23 +578,23 @@ to
         implementation 'com.koushikdutta.async:androidasync:2.1.6'
     }
 
-#### STEP 15a)
+#### STEP 16a)
 
 Provide the icons by copying the res folder to android/app/src/main, overwriting 10 PNG icon files.
 
     cp -rv res/* android/app/src/main/res
 
-#### STEP 16a)
+#### STEP 17a)
 
 In a 2nd terminal window change to the project directory, and start Metro with this command
 
     npx react-native start --reset-cache
 
-#### STEP 17a)
+#### STEP 18a)
 
 Activate developer mode on an android, enable USB debugging, and connect it to the computer. (You can actually skip this step and it will still build, but the build will complete with an emulator not found error).
 
-#### STEP 18a)
+#### STEP 19a)
 
 From the terminal window not running Metro in the project directory build and run the debug version of the app with this command.
 

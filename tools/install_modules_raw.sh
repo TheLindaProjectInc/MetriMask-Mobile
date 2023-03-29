@@ -53,4 +53,5 @@ npm install --save react-native-dropdown-picker
 npm install --save react-native-pager-view
 npm install --save react-native-tab-view
 npm install --save react-native-svg
-npm install --save github:baydroid/react-native-qrcode-svg
+npm install --save react-native-qrcode-svg
+npm install --save big-integer
