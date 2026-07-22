@@ -501,13 +501,13 @@ export default function MainView() : JSX.Element
 
         function renderBalance(am : AccountManager) : JSX.Element | null
             {
-            function renderCenteredText(text : string) : JSX.Element
+            function renderCenteredText(text : string, emphasize? : boolean) : JSX.Element
                 {
                 return (
                     <>
                         <View style={ commonStyles.rowContainer }>
                             <View style={{ flex: 1 }}/>
-                            <Text style={{ color: colors.black }}>{ text }</Text>
+                            <Text style={{ color: colors.black, fontWeight: emphasize ? "700" : "normal", fontSize: emphasize ? 16 : 14 }}>{ text }</Text>
                             <View style={{ flex: 1 }}/>
                         </View>
                     </>
@@ -522,8 +522,8 @@ export default function MainView() : JSX.Element
                 return (
                     <>
                         <View style={{ height: 6 }}/>
-                        { renderCenteredText(formatSatoshi(sat, MRX_DECIMALS) + " MRX") }
-                        <View style={{ height: 6 }}/>
+                        { renderCenteredText(formatSatoshi(sat, MRX_DECIMALS) + " MRX", true) }
+                        <View style={{ height: 2 }}/>
                         { renderCenteredText("$ " + usd) }
                     </>
                     );
@@ -531,7 +531,7 @@ export default function MainView() : JSX.Element
                 return (
                     <>
                         <View style={{ height: 6 }}/>
-                        { renderCenteredText(formatSatoshi(sat, MRX_DECIMALS) + " MRX") }
+                        { renderCenteredText(formatSatoshi(sat, MRX_DECIMALS) + " MRX", true) }
                     </>
                     );
             }
@@ -543,16 +543,15 @@ export default function MainView() : JSX.Element
                 <DrawerContentScrollView { ...props } style={{ backgroundColor: colors.white }}>
                     <BurgerlessTitleBar title="MetriMask"/>
                     <View style={ commonStyles.horizontalBar }/>
-                    <View style={{ height: 12 }}/>
-                    <View style={ commonStyles.rowContainer }>
-                        <View style={{ flex: 1 }}/>
-                        <Text style={{ color: colors.black }}>{ am.current.accountName + " on " + am.current.wm.ninfo.name }</Text>
-                        <View style={{ flex: 1 }}/>
+                    <View style={{ margin: 12, marginBottom: 6, padding: 16, borderRadius: 14, backgroundColor: colors.lightPurple, borderColor: colors.lightishPurple, borderWidth: 1 }}>
+                        <View style={ commonStyles.rowContainer }>
+                            <View style={{ flex: 1 }}/>
+                            <Text style={{ color: colors.black }}>{ am.current.accountName + " on " + am.current.wm.ninfo.name }</Text>
+                            <View style={{ flex: 1 }}/>
+                        </View>
+                        { renderBalance(am) }
                     </View>
-                    { renderBalance(am) }
-                    <View style={{ height: 12 }}/>
-                    <View style={ commonStyles.horizontalBar }/>
-                    <View style={{ height: 18 }}/>
+                    <View style={{ height: 6 }}/>
                     <MenuOption label="Browser"         icon="web"                 onPress={ () : void => navigate(ROOT_SCREENS.BROWSER)                             }/>
                     <MenuOption label="Account Home"    icon="account"             onPress={ () : void => walletNavigateAndCloseDrawer(WALLET_SCREENS.ACCOUNT_HOME)   }/>
                     <MenuOption label="Send"            icon="debug-step-out"      onPress={ () : void => walletNavigateAndCloseDrawer(WALLET_SCREENS.SEND)           }/>

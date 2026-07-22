@@ -49,9 +49,11 @@ export function buildCommonStyles(colors : ThemeColors)
             {
             flex: 1,
             padding: 6,
-            borderWidth: 1,
+            // Border sides spelled out individually rather than borderWidth/borderColor shorthand
+            // -- see the comment in dropDownPickerThemeProps() for why.
+            borderTopWidth: 1, borderRightWidth: 1, borderBottomWidth: 1, borderLeftWidth: 1,
             borderRadius: 4,
-            borderColor: colors.darkishPurple
+            borderTopColor: colors.darkishPurple, borderRightColor: colors.darkishPurple, borderBottomColor: colors.darkishPurple, borderLeftColor: colors.darkishPurple,
             },
         icon:
             {
@@ -60,10 +62,15 @@ export function buildCommonStyles(colors : ThemeColors)
             },
         topBar:
             {
-            height: 40,
+            height: 52,
             backgroundColor: colors.white,
             flexDirection: "row",
-            alignItems: "center"
+            alignItems: "center",
+            elevation: 3,
+            shadowColor: "#000000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.12,
+            shadowRadius: 3,
             },
         titleContainingView:
             {
@@ -72,14 +79,25 @@ export function buildCommonStyles(colors : ThemeColors)
             },
         titleText:
             {
-            fontSize: 20,
+            fontSize: 21,
             color: colors.black,
             fontWeight: "bold",
+            letterSpacing: 0.3,
             },
         horizontalBar:
             {
             height: 3,
             backgroundColor: colors.darkPurple,
+            },
+        card:
+            {
+            backgroundColor: colors.lightPurple,
+            // Border sides spelled out individually rather than borderWidth/borderColor shorthand
+            // -- see the comment in dropDownPickerThemeProps() for why.
+            borderTopWidth: 1, borderRightWidth: 1, borderBottomWidth: 1, borderLeftWidth: 1,
+            borderTopColor: colors.lightishPurple, borderRightColor: colors.lightishPurple, borderBottomColor: colors.lightishPurple, borderLeftColor: colors.lightishPurple,
+            borderRadius: 14,
+            padding: 16,
             },
         squeezed:
             {
@@ -114,12 +132,20 @@ export function useCommonStyles() : ReturnType<typeof buildCommonStyles>
 
 export function dropDownPickerThemeProps(colors : ThemeColors)
     {
+    // Border sides are spelled out individually (rather than the borderColor/borderWidth
+    // shorthand) because the shorthand form intermittently drops the bottom edge of the box
+    // under Android Fabric when combined with borderRadius.
+    const fullBorder =
+        {
+        borderTopWidth: 1, borderRightWidth: 1, borderBottomWidth: 1, borderLeftWidth: 1,
+        borderTopColor: colors.darkishPurple, borderRightColor: colors.darkishPurple, borderBottomColor: colors.darkishPurple, borderLeftColor: colors.darkishPurple,
+        };
     return (
         {
-        style: { borderColor: colors.darkishPurple, backgroundColor: colors.white },
+        style: { ...fullBorder, backgroundColor: colors.white },
         textStyle: { color: colors.black },
         placeholderStyle: { color: colors.middleGrey },
-        dropDownContainerStyle: { borderColor: colors.darkishPurple, backgroundColor: colors.white },
+        dropDownContainerStyle: { ...fullBorder, backgroundColor: colors.white },
         listItemLabelStyle: { color: colors.black },
         selectedItemLabelStyle: { color: colors.darkPurple },
         arrowIconStyle: { tintColor: colors.black },
@@ -208,6 +234,23 @@ export function InvalidMessage(props : InvalidMessageProps) : JSX.Element
             <View style={{ flex: 1 }}/>
         </View>
         );
+    }
+
+
+
+export type CardProps =
+    {
+    style?    : any;
+    children? : React.ReactNode;
+    }
+
+// Groups related content into a visually distinct, rounded panel (tinted purple wash) so
+// screens with several info blocks (account summary, settings) read as sections rather than
+// one flat list of rows.
+export function Card(props : CardProps) : JSX.Element
+    {
+    const commonStyles = useCommonStyles();
+    return (<View style={ [ commonStyles.card, props.style ] }>{ props.children }</View>);
     }
 
 
@@ -464,6 +507,7 @@ export type SimpleButtonProps =
     text?     : string;
     icon?     : string;
     disabled? : boolean;
+    variant?  : "primary" | "secondary" | "danger";
     onPress   : () => void;
     }
 
@@ -472,24 +516,35 @@ export function SimpleButton(props : SimpleButtonProps) : JSX.Element
     const colors = useThemeColors();
     const commonStyles = useCommonStyles();
     const text = props.text;
+    const variant = props.variant ? props.variant : "secondary";
     delete (props as any)["text"];
-    const testColor : string = props.disabled ? colors.middleGrey : colors.black;
-    const iconColor : string = props.disabled ? colors.middleGrey : colors.darkPurple;
+    delete (props as any)["variant"];
     if (text)
         // Deliberately built from primitives (View/TouchableRipple) rather than react-native-paper's
         // Button: Paper's outlined Button wraps content in a Surface driven by an Animated.Value
         // elevation (even at value 0), and that Surface/elevation machinery intermittently fails to
         // draw the bottom edge of the border under Fabric on Android. Plain primitives sidestep it.
+        {
+        const isPrimary : boolean = variant == "primary" && !props.disabled;
+        const isDanger  : boolean = variant == "danger";
+        const borderColor  : string = props.disabled ? colors.middleGrey : (isDanger ? colors.red : colors.darkishPurple);
+        const bgColor       = isPrimary ? colors.darkPurple : undefined;
+        const textColor : string = props.disabled ? colors.middleGrey : (isPrimary ? "#FFFFFF" : (isDanger ? colors.red : colors.black));
+        const iconColor : string = props.disabled ? colors.middleGrey : (isPrimary ? "#FFFFFF" : (isDanger ? colors.red : colors.darkPurple));
+        const rippleColor : string = isDanger ? colors.redWash : (isPrimary ? colors.darkPurpleRipple : colors.purpleRipple);
         return (
-            <View style={{ borderColor: colors.darkishPurple, borderWidth: 1, borderRadius: 20, overflow: "hidden" }}>
-                <TouchableRipple rippleColor={ colors.purpleRipple } onPress={ props.onPress } disabled={ props.disabled }>
+            // Border sides spelled out individually rather than borderWidth/borderColor shorthand
+            // -- see the comment in dropDownPickerThemeProps() for why.
+            <View style={{ backgroundColor: bgColor, borderTopWidth: 1, borderRightWidth: 1, borderBottomWidth: 1, borderLeftWidth: 1, borderTopColor: borderColor, borderRightColor: borderColor, borderBottomColor: borderColor, borderLeftColor: borderColor, borderRadius: 20, overflow: "hidden" }}>
+                <TouchableRipple rippleColor={ rippleColor } onPress={ props.onPress } disabled={ props.disabled }>
                     <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", paddingVertical: 9, paddingHorizontal: 16 }}>
                         { props.icon ? <MaterialCommunityIcons name={ props.icon } color={ iconColor } size={ 18 } style={{ marginRight: 8 }}/> : null }
-                        <Text style={{ color: testColor }}>{ text }</Text>
+                        <Text style={{ color: textColor, fontWeight: isPrimary ? "600" : "normal" }}>{ text }</Text>
                     </View>
                 </TouchableRipple>
             </View>
             );
+        }
     else if (props.icon)
         return (
             <IconButton { ...(props as any) } iconColor={ colors.black } style={ commonStyles.icon } size={ 24 }/>
@@ -542,18 +597,22 @@ export function MenuOption(props : MenuOptionProps) : JSX.Element
             <View style={{ flexDirection: "row", margin: 0, borderWidth: 0, padding: 0 }}>
                 <View style={{ width: 12 }}/>
                 <IconButton icon={ props.icon } iconColor={ colors.middleGrey } disabled={ true } size={ 24 } style={{ margin: 0, padding: 0, borderWidth: 0 }}/>
-                <Text style={{ color: colors.middleGrey, paddingTop: 8, paddingBottom: 6, paddingLeft: 6, paddingRight: 18 }}>{ props.label }</Text>
+                <Text style={{ color: colors.middleGrey, paddingTop: 12, paddingBottom: 12, paddingLeft: 6, paddingRight: 18 }}>{ props.label }</Text>
             </View>
             );
     else
+        // Wrapped in a rounded, inset View so the ripple clips to a "pill row" shape (Material 3
+        // nav-drawer style) instead of bleeding edge-to-edge across the drawer.
         return (
-            <TouchableRipple onPress={ props.onPress } rippleColor={ colors.darkPurpleRipple }>
-                <View style={{ flexDirection: "row", margin: 0, borderWidth: 0, padding: 0 }}>
-                    <View style={{ width: 12 }}/>
-                    <IconButton icon={ props.icon } iconColor={ colors.black } size={ 24 } style={{ margin: 0, padding: 0, borderWidth: 0 }}/>
-                    <Text style={{ color: colors.black, paddingTop: 8, paddingBottom: 6, paddingLeft: 6, paddingRight: 18 }}>{ props.label }</Text>
-                </View>
-            </TouchableRipple>
+            <View style={{ marginHorizontal: 8, marginVertical: 2, borderRadius: 12, overflow: "hidden" }}>
+                <TouchableRipple onPress={ props.onPress } rippleColor={ colors.darkPurpleRipple }>
+                    <View style={{ flexDirection: "row", margin: 0, borderWidth: 0, padding: 0 }}>
+                        <View style={{ width: 12 }}/>
+                        <IconButton icon={ props.icon } iconColor={ colors.black } size={ 24 } style={{ margin: 0, padding: 0, borderWidth: 0 }}/>
+                        <Text style={{ color: colors.black, paddingTop: 12, paddingBottom: 12, paddingLeft: 6, paddingRight: 18 }}>{ props.label }</Text>
+                    </View>
+                </TouchableRipple>
+            </View>
             );
     }
 

@@ -212,7 +212,7 @@ export function CreateAccountView(props : CreateAccountViewProps) : JSX.Element
         {
         return (
             <>
-                <SimpleButton text="Create New Account" onPress = { createNew }/>
+                <SimpleButton text="Create New Account" variant="primary" onPress = { createNew }/>
                 <View style={{ height: 24 }}/>
                 <SimpleButton text="Import Mnemonic" onPress = { importByMnemonic }/>
                 <View style={{ height: 24 }}/>

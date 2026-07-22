@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, ScrollView } from "react-native";
 
 import { MC } from "../mc";
-import { useCommonStyles, SimpleDoublet, DoubleDoublet, SimpleButtonPair, BurgerlessTitleBar, AddressQuasiDoublet } from "./common";
+import { useCommonStyles, SimpleDoublet, DoubleDoublet, SimpleButtonPair, BurgerlessTitleBar, AddressQuasiDoublet, Card } from "./common";
 import { useThemeColors } from "./theme";
 
 
@@ -29,14 +29,16 @@ export function PermissionToSignView(props : PermissionToSignViewProps) : JSX.El
                 <View style={{ height: 24 }} />
                 <Text style={{ color: colors.black }}>A web page is asking your permission to sign a message.</Text>
                 <View style={{ height: 24 }} />
-                <DoubleDoublet titleL="Siging Account:" textL={ am.current.accountName } titleR="Network:" textR={ am.current.wm.ninfo.name } />
-                <View style={{ height: 7 }} />
-                <AddressQuasiDoublet title="Signing Account Address:" acnt={ am.current }/>
-                <View style={{ height: 7 }} />
-                <SimpleDoublet title="Signature Requesting Webpage:" text={ props.requestingURL }/>
-                <View style={{ height: 7 }} />
-                <SimpleDoublet title="Signature Requester:" text={ props.askingEntitySelfDescription }/>
-                <View style={{ height: 24 }} />
+                <Card>
+                    <DoubleDoublet titleL="Siging Account:" textL={ am.current.accountName } titleR="Network:" textR={ am.current.wm.ninfo.name } />
+                    <View style={{ height: 7 }} />
+                    <AddressQuasiDoublet title="Signing Account Address:" acnt={ am.current }/>
+                    <View style={{ height: 7 }} />
+                    <SimpleDoublet title="Signature Requesting Webpage:" text={ props.requestingURL }/>
+                    <View style={{ height: 7 }} />
+                    <SimpleDoublet title="Signature Requester:" text={ props.askingEntitySelfDescription }/>
+                </Card>
+                <View style={{ height: 20 }} />
                 <Text style={{ color: colors.middleGrey}}>Message to be Signed:</Text>
                 <View style={{ height: 1 }} />
                 <ScrollView style={ commonStyles.borderedScroller }>
@@ -45,7 +47,7 @@ export function PermissionToSignView(props : PermissionToSignViewProps) : JSX.El
                 <View style={{ height: 24 }} />
                 <SimpleButtonPair
                     left={{ text: "Cancel", onPress: () : void => props.onSigningPermittedDecision(false) }}
-                    right={{ text: "Sign", onPress: () : void => props.onSigningPermittedDecision(true) }}/>
+                    right={{ text: "Sign", variant: "primary", onPress: () : void => props.onSigningPermittedDecision(true) }}/>
                 <View style={{ height: 24 }} />
             </View>
         </View>

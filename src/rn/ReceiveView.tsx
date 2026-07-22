@@ -9,7 +9,7 @@ import Clipboard from '@react-native-clipboard/clipboard';
 
 import { MC, MRX_DECIMALS } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
-import { useCommonStyles, DoubleDoublet, formatSatoshi, SimpleDoublet, TitleBar, SimpleButton, AddressQuasiDoublet } from "./common";
+import { useCommonStyles, DoubleDoublet, formatSatoshi, SimpleDoublet, TitleBar, SimpleButton, AddressQuasiDoublet, Card } from "./common";
 import { useThemeColors } from "./theme";
 
 
@@ -49,21 +49,28 @@ export function ReceiveView(props : ReceiveViewProps) : JSX.Element
             <View style={ commonStyles.horizontalBar }/>
             <View style={ commonStyles.squeezed }>
                 <View style = {{ height: 24 }} />
-                <DoubleDoublet titleL="Account:" textL={ am.current.accountName } titleR="Network:" textR={ am.current.wm.ninfo.name } />
-                <View style={{ height: 7 }} />
-                <SimpleDoublet title="Account Balance:" text={ formatSatoshi(am.current.wm.balanceSat, MRX_DECIMALS) + " MRX" }/>
-                { renderBalanceUSD() }
-                <View style={{ height: 7 }} />
-                <AddressQuasiDoublet title="Account Address:" acnt={ am.current }/>
-                <View style = {{ height: 24 }} />
-                <SimpleButton onPress={ () : void => Clipboard.setString(am.current.wm.address) } text="Copy to Clipboard" icon="content-copy"/>
+                <Card>
+                    <DoubleDoublet titleL="Account:" textL={ am.current.accountName } titleR="Network:" textR={ am.current.wm.ninfo.name } />
+                    <View style={{ height: 7 }} />
+                    <SimpleDoublet title="Account Balance:" text={ formatSatoshi(am.current.wm.balanceSat, MRX_DECIMALS) + " MRX" }/>
+                    { renderBalanceUSD() }
+                    <View style={{ height: 7 }} />
+                    <AddressQuasiDoublet title="Account Address:" acnt={ am.current }/>
+                </Card>
+                <View style = {{ height: 20 }} />
+                <SimpleButton onPress={ () : void => Clipboard.setString(am.current.wm.address) } text="Copy to Clipboard" icon="content-copy" variant="primary"/>
                 <View style={{ height: 24 }} />
                 <View style={ commonStyles.rowContainer }>
                     <View style={{ flex: 1 }}/>
-                    <QRCode value={ am.current.wm.address } size={ qrSize() }/>
+                    { /* White backdrop is deliberate even in dark mode: the QR's black modules
+                         would otherwise merge into a dark screen background and become
+                         unscannable. */ }
+                    <View style={{ backgroundColor: "#FFFFFF", padding: 16, borderRadius: 12 }}>
+                        <QRCode value={ am.current.wm.address } size={ qrSize() }/>
+                    </View>
                     <View style={{ flex: 1 }}/>
                 </View>
-                <View style={{ height: 24 }} />
+                <View style={{ height: 32 }} />
                 <SimpleButton onPress={ () : void => walletNavigation.navigate(WALLET_SCREENS.ACCOUNT_HOME) } text="Account Home"/>
             </View>
         </View>

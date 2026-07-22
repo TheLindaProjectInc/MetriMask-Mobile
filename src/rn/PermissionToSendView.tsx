@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Text, ScrollView, GestureResponderEvent, Keyboard } from "react-native";
 
 import { BIG_0, DEFAULT_GAS_LIMIT, DEFAULT_GAS_PRICE_SATOSHI, MC, MRX_DECIMALS } from "../mc";
-import { useCommonStyles, SimpleDoublet, DoubleDoublet, formatSatoshi, BurgerlessTitleBar, SimpleButtonPair, SimpleTextInputPair, SimpleTextInput, validateAndSatoshizeFloatStr, validateIntStr, InvalidMessage, AddressQuasiDoublet, noumberOfDecimals } from "./common";
+import { useCommonStyles, SimpleDoublet, DoubleDoublet, formatSatoshi, BurgerlessTitleBar, SimpleButtonPair, SimpleTextInputPair, SimpleTextInput, validateAndSatoshizeFloatStr, validateIntStr, InvalidMessage, AddressQuasiDoublet, noumberOfDecimals, Card } from "./common";
 import { useThemeColors } from "./theme";
 import { ContractCallParams } from "../WalletManager"
 import { USDPriceFinder } from "../USDPriceFinder";
@@ -160,17 +160,19 @@ export function PermissionToSendView(props : PermissionToSendViewProps) : JSX.El
                 <View style={{ height: 24 }} />
                 <Text style={{ color: colors.black }}>A web page is asking your permission to send a transaction to a contract.</Text>
                 <View style={{ height: 24 }} />
-                <DoubleDoublet titleL="Sending Account:" textL={ am.current.accountName } titleR="Network:" textR={ am.current.wm.ninfo.name } />
-                <View style={{ height: 7 }} />
-                <AddressQuasiDoublet title="Sending Account Address:" acnt={ am.current }/>
-                <View style={{ height: 7 }} />
-                <SimpleDoublet title="Sending Account Balance:" text={ formatSatoshi(am.current.wm.balanceSat, MRX_DECIMALS) + " MRX" }/>
-                { renderBalanceUSD() }
-                <View style={{ height: 7 }} />
-                <SimpleDoublet title="Webpage Requesting to Send:" text={ props.requestingURL }/>
-                <View style={{ height: 7 }} />
-                <SimpleDoublet title="Contract Address:" text={ contractAddr }/>
-                <View style={{ height: 7 }} />
+                <Card>
+                    <DoubleDoublet titleL="Sending Account:" textL={ am.current.accountName } titleR="Network:" textR={ am.current.wm.ninfo.name } />
+                    <View style={{ height: 7 }} />
+                    <AddressQuasiDoublet title="Sending Account Address:" acnt={ am.current }/>
+                    <View style={{ height: 7 }} />
+                    <SimpleDoublet title="Sending Account Balance:" text={ formatSatoshi(am.current.wm.balanceSat, MRX_DECIMALS) + " MRX" }/>
+                    { renderBalanceUSD() }
+                    <View style={{ height: 7 }} />
+                    <SimpleDoublet title="Webpage Requesting to Send:" text={ props.requestingURL }/>
+                    <View style={{ height: 7 }} />
+                    <SimpleDoublet title="Contract Address:" text={ contractAddr }/>
+                </Card>
+                <View style={{ height: 20 }} />
                 <SimpleTextInput label="Amount to Send (MRX):" keyboardType="numeric" value={ amountStr } onChangeText={ onChangeAmount }/>
                 { renderAmountToSendUSD() }
                 <View style={{ height: 7 }} />
@@ -188,7 +190,7 @@ export function PermissionToSendView(props : PermissionToSendViewProps) : JSX.El
                 <View style={{ height: 24 }} />
                 <SimpleButtonPair
                     left={{ text: "Cancel", onPress: () : void => props.onSendingPermittedDecision(false, "0", 0, 0) }}
-                    right={{ text: "Send", onPress: onSend }}/>
+                    right={{ text: "Send", variant: "primary", onPress: onSend }}/>
                 { renderErrorMessage() }
                 <View style={{ height: 24 }} />
             </View>

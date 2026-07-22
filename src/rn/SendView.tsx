@@ -9,7 +9,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { MC, MRX_DECIMALS, BIG_0, ADDRESS_SYNTAX } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
 import { WorkFunctionResult } from "./MainView";
-import { useCommonStyles, dropDownPickerThemeProps, DoubleDoublet, formatSatoshi, validateAndSatoshizeFloatStr, SimpleDoublet, TitleBar, SimpleTextInput, InvalidMessage, SimpleButtonPair, SimpleTextInputPair, LOADING_STR, validateIntStr, AddressQuasiDoublet, noumberOfDecimals } from "./common";
+import { useCommonStyles, dropDownPickerThemeProps, DoubleDoublet, formatSatoshi, validateAndSatoshizeFloatStr, SimpleDoublet, TitleBar, SimpleTextInput, InvalidMessage, SimpleButtonPair, SimpleTextInputPair, LOADING_STR, validateIntStr, AddressQuasiDoublet, noumberOfDecimals, Card } from "./common";
 import { useThemeColors } from "./theme";
 import { MRC20Token } from "../MRC20";
 import { QR_SCANNER_TARGETS } from "./QRAddressScanView";
@@ -492,7 +492,7 @@ export function SendView(props : SendViewProps) : JSX.Element
         if (errorMessage.length)
             return (<InvalidMessage text={ errorMessage }/>);
         else
-            return (<SimpleButtonPair left={{ text: "Cancel", onPress: onCancel }} right={{ text: "Send", onPress: onSend }}/>);
+            return (<SimpleButtonPair left={{ text: "Cancel", onPress: onCancel }} right={{ text: "Send", variant: "primary", onPress: onSend }}/>);
         }
 
     return (
@@ -501,13 +501,15 @@ export function SendView(props : SendViewProps) : JSX.Element
             <View style={ commonStyles.horizontalBar }/>
             <View style={ commonStyles.squeezed }>
                 <View style = {{ height: 24 }} />
-                <DoubleDoublet titleL="From Account:" textL={ am.current.accountName } titleR="Network:" textR={ am.current.wm.ninfo.name }/>
-                <View style={{ height: 7 }} />
-                <AddressQuasiDoublet title="From Account Address:" acnt={ am.current }/>
-                <View style={{ height: 7 }} />
-                <SimpleDoublet title="From Account Balance:" text={ balanceStr }/>
-                { renderBalanceUSD() }
-                <View style={{ height: 14 }} />
+                <Card>
+                    <DoubleDoublet titleL="From Account:" textL={ am.current.accountName } titleR="Network:" textR={ am.current.wm.ninfo.name }/>
+                    <View style={{ height: 7 }} />
+                    <AddressQuasiDoublet title="From Account Address:" acnt={ am.current }/>
+                    <View style={{ height: 7 }} />
+                    <SimpleDoublet title="From Account Balance:" text={ balanceStr }/>
+                    { renderBalanceUSD() }
+                </Card>
+                <View style={{ height: 20 }} />
                 <Text style={{ color: colors.middleGrey}}>Token:</Text>
                 <DropDownPicker
                     { ...(dropDownPickerThemeProps(colors) as any) }

@@ -172,7 +172,7 @@ export class MRXStorage
     private saltItem              = new StoredItem<Uint8Array>       ("salt",              TYPE_UINT8ARRAY,      new Uint8Array(0)                );
     private accountManagerItem    = new StoredItem<AccountManager>   ("accountManager",    TYPE_ACCOUNT_MANAGER, new AccountManager()             );
     private browserHomePageItem   = new StoredItem<string>           ("browserHomePage",   TYPE_STRING,          DEFAULT_INITIAL_URL              );
-    private browserFavouritesItem = new StoredItem<WebFavouritesList>("browserFaourites",  TYPE_WEB_FAVOURITES,  new WebFavouritesList()          );
+    private browserFavouritesItem = new StoredItem<WebFavouritesList>("browserFaourites",  TYPE_WEB_FAVOURITES,  WebFavouritesList.withDefaults() );
     private browserHistoryItem    = new StoredItem<WebHistoryList>   ("browserHistory",    TYPE_WEB_HISTORY,     new WebHistoryList()             );
     private searchEngineIndexItem = new StoredItem<number>           ("seIndex",           TYPE_NUMBER,          0                                );
     private darkModeItem          = new StoredItem<boolean>          ("darkMode",          TYPE_BOOLEAN,         false                            );

@@ -363,7 +363,9 @@ export default function WalletView(props : WalletViewProps) : JSX.Element
         onAddressScannedCopy = null;
         return (
             <SafeAreaView>
-                <QRAddressScanView { ...normalizeProps(props) } returnScreen={ returnScreenCopy } onAddressScanned={ onAddressScanned } onBurgerPressed={ onBurgerPressed }/>
+                <View style={ walletStyles.screenHolder }>
+                    <QRAddressScanView { ...normalizeProps(props) } returnScreen={ returnScreenCopy } onAddressScanned={ onAddressScanned } onBurgerPressed={ onBurgerPressed }/>
+                </View>
             </SafeAreaView>
             );
         }
