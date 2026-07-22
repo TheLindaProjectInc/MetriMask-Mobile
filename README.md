@@ -104,19 +104,41 @@ Release builds need a signing keystore, which is deliberately **not** checked in
    release keystore means you can no longer publish updates to an app already
    distributed under it.
 
-3. Build:
-   ```
-   cd android
-   ./gradlew assembleRelease
-   ```
-   Output APK: `android/app/build/outputs/apk/release/app-release.apk`
+3. Build. Which Gradle task you want depends on where the build is going:
 
-4. Verify the signature (don't use `jarsigner -verify` — it only understands the legacy
-   v1/JAR signing scheme and will incorrectly report "jar is unsigned" for a
+   - **`.apk`** (sideloading, direct distribution, `apksigner`-style manual verification):
+     ```
+     cd android
+     ./gradlew assembleRelease
+     ```
+     Output: `android/app/build/outputs/apk/release/app-release.apk` (~90MB).
+
+   - **`.aab`** (**required for Google Play Console uploads** — Play Store does not
+     accept `.apk` uploads):
+     ```
+     cd android
+     ./gradlew bundleRelease
+     ```
+     Output: `android/app/build/outputs/bundle/release/app-release.aab` (~65MB). Already
+     signed with the release keystore — no separate signing step before uploading to
+     Play Console.
+
+   Either task bundles the JS in release mode and builds every autolinked native
+   module's release variant from scratch, unlike `assembleDebug` (roughly a minute once
+   warm) — expect **10-20 minutes** the first time, not a hang. If you're driving this
+   from a script or CI step with its own timeout, give it at least 20 minutes and run it
+   detached/in the background rather than assuming failure at the 5-minute mark. Running
+   one task right after the other is much faster (well under a minute) since Gradle
+   reuses the compiled/bundled artifacts.
+
+4. Verify the `.apk` signature (don't use `jarsigner -verify` — it only understands the
+   legacy v1/JAR signing scheme and will incorrectly report "jar is unsigned" for a
    v2/v3-signed APK):
    ```
    <Android SDK>/build-tools/36.0.0/apksigner verify --verbose android/app/build/outputs/apk/release/app-release.apk
    ```
+   `.aab` files aren't directly installable/verifiable with `apksigner` the same way —
+   Play Console validates the upload signature itself once you upload it.
 
 
 
@@ -150,6 +172,18 @@ the updated `.patch` file.
   which breaks on-device commands in ways that don't look like a path problem at all.
   Prefix the command with `MSYS_NO_PATHCONV=1` to stop this, e.g.
   `MSYS_NO_PATHCONV=1 adb shell screencap -p /sdcard/screen.png`.
+
+- **`assembleRelease` fails with "SDK location not found"** even though Android Studio/
+  emulators work fine. `android/local.properties` (the `sdk.dir` pointer) is gitignored
+  and machine-local — if it's missing, recreate it yourself, it's not sensitive:
+  ```
+  echo sdk.dir=/path/to/Android/Sdk > android/local.properties
+  ```
+  (On Windows, escape backslashes and the drive-letter colon, e.g.
+  `sdk.dir=D\:\\Android\\Sdk`.) This is unrelated to `android/keystore.properties`/the
+  release keystore covered above — that one is a genuine secret and must be restored
+  from your own backup, never regenerated, or you lose the ability to update any
+  release already signed with it.
 
 - **Emulator: `INSTALL_FAILED_INSUFFICIENT_STORAGE` on `adb install -r`.** AVDs ship
   with a small userdata partition by default. `adb shell pm trim-caches 500M` or
