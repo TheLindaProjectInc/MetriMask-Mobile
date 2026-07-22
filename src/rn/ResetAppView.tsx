@@ -5,43 +5,47 @@ import { StackNavigationProp } from '@react-navigation/stack';
 
 import { MC } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
-import { commonStyles, TitleBar, SimpleButton, COLOR_WHITE, COLOR_RED, COLOR_BLACK, SimpleTextInput } from "./common";
+import { useCommonStyles, TitleBar, SimpleButton, SimpleTextInput } from "./common";
+import { ThemeColors, useThemeColors } from "./theme";
 import { AccountManager } from "../AccountManager";
 
 
 
-const resetAppStyles = StyleSheet.create
-    ({
-    warning:
-        {
-        marginLeft: 24,
-        marginRight: 24,
-        padding: 12,
-        backgroundColor: COLOR_RED,
-        },
-    warningTitle:
-        {
-        fontSize: 24,
-        fontWeight: "bold",
-        color: COLOR_WHITE,
-        paddingTop: 4,
-        paddingBottom: 4,
-        alignSelf: "center",
-        },
-    warningText:
-        {
-        fontWeight: "bold",
-        color: COLOR_WHITE,
-        },
-    instructionText:
-        {
-        color: COLOR_BLACK,
-        marginLeft: 24,
-        marginRight: 24,
-        paddingLeft: 12,
-        paddingRight: 12,
-        },
-    });
+function buildResetAppStyles(colors : ThemeColors)
+    {
+    return StyleSheet.create
+        ({
+        warning:
+            {
+            marginLeft: 24,
+            marginRight: 24,
+            padding: 12,
+            backgroundColor: colors.red,
+            },
+        warningTitle:
+            {
+            fontSize: 24,
+            fontWeight: "bold",
+            color: colors.white,
+            paddingTop: 4,
+            paddingBottom: 4,
+            alignSelf: "center",
+            },
+        warningText:
+            {
+            fontWeight: "bold",
+            color: colors.white,
+            },
+        instructionText:
+            {
+            color: colors.black,
+            marginLeft: 24,
+            marginRight: 24,
+            paddingLeft: 12,
+            paddingRight: 12,
+            },
+        });
+    }
 
 
 
@@ -58,6 +62,9 @@ export type ResetAppViewProps =
 
 export function ResetAppView(props : ResetAppViewProps) : JSX.Element
     {
+    const colors = useThemeColors();
+    const commonStyles = useCommonStyles();
+    const resetAppStyles = buildResetAppStyles(colors);
     const [ checkStr, setCheckStr ] = useState<string>("");
     const [ disableReset, setDisableReset ] = useState<boolean>(true);
 

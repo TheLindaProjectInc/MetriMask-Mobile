@@ -6,7 +6,8 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 
 import { BIG_0, MC, MRX_DECIMALS } from "../mc";
-import { AddressQuasiDoublet, COLOR_BLACK, commonStyles, DoubleDoublet, formatSatoshi, noumberOfDecimals, SimpleButtonPair, SimpleDoublet, TitleBar, validateAndSatoshizeFloatStr } from "./common";
+import { AddressQuasiDoublet, useCommonStyles, DoubleDoublet, formatSatoshi, noumberOfDecimals, SimpleButtonPair, SimpleDoublet, TitleBar, validateAndSatoshizeFloatStr } from "./common";
+import { useThemeColors } from "./theme";
 import { WorkFunctionResult } from "./MainView";
 import { MRC20Token } from "../MRC20";
 import { WALLET_SCREENS } from "./WalletView";
@@ -43,6 +44,8 @@ export type ConfirmSendViewProps = ConfirmSendViewSerializableProps &
 
 export function ConfirmSendView(props : ConfirmSendViewProps) : JSX.Element
     {
+    const colors = useThemeColors();
+    const commonStyles = useCommonStyles();
     const walletNavigation = useNavigation<StackNavigationProp<any>>();
     const am = MC.getMC().storage.accountManager;
     const priceFinder = USDPriceFinder.getFinder();
@@ -139,7 +142,7 @@ export function ConfirmSendView(props : ConfirmSendViewProps) : JSX.Element
         if (amountToSend <= BIG_0) return null;
         const amountToSendUSD : string = priceFinder.satoshiToUSD(amountToSend);
         if (!amountToSendUSD) return null;
-        return (<Text style={{ color: COLOR_BLACK }}>{ "$ " + amountToSendUSD }</Text>);
+        return (<Text style={{ color: colors.black }}>{ "$ " + amountToSendUSD }</Text>);
         }
 
     return (

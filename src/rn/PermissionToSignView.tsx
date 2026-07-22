@@ -2,7 +2,8 @@ import React from "react";
 import { View, Text, ScrollView } from "react-native";
 
 import { MC } from "../mc";
-import { commonStyles, SimpleDoublet, DoubleDoublet, SimpleButtonPair, BurgerlessTitleBar, AddressQuasiDoublet, COLOR_BLACK, COLOR_MIDDLE_GREY } from "./common";
+import { useCommonStyles, SimpleDoublet, DoubleDoublet, SimpleButtonPair, BurgerlessTitleBar, AddressQuasiDoublet } from "./common";
+import { useThemeColors } from "./theme";
 
 
 
@@ -16,6 +17,8 @@ export type PermissionToSignViewProps =
 
 export function PermissionToSignView(props : PermissionToSignViewProps) : JSX.Element
     {
+    const colors = useThemeColors();
+    const commonStyles = useCommonStyles();
     const am = MC.getMC().storage.accountManager;
 
     return (
@@ -24,7 +27,7 @@ export function PermissionToSignView(props : PermissionToSignViewProps) : JSX.El
             <View style={ commonStyles.horizontalBar }/>
             <View style={{ ...commonStyles.squeezed, flexDirection: "column", flex: 1 }}>
                 <View style={{ height: 24 }} />
-                <Text style={{ color: COLOR_BLACK }}>A web page is asking your permission to sign a message.</Text>
+                <Text style={{ color: colors.black }}>A web page is asking your permission to sign a message.</Text>
                 <View style={{ height: 24 }} />
                 <DoubleDoublet titleL="Siging Account:" textL={ am.current.accountName } titleR="Network:" textR={ am.current.wm.ninfo.name } />
                 <View style={{ height: 7 }} />
@@ -34,10 +37,10 @@ export function PermissionToSignView(props : PermissionToSignViewProps) : JSX.El
                 <View style={{ height: 7 }} />
                 <SimpleDoublet title="Signature Requester:" text={ props.askingEntitySelfDescription }/>
                 <View style={{ height: 24 }} />
-                <Text style={{ color: COLOR_MIDDLE_GREY}}>Message to be Signed:</Text>
+                <Text style={{ color: colors.middleGrey}}>Message to be Signed:</Text>
                 <View style={{ height: 1 }} />
                 <ScrollView style={ commonStyles.borderedScroller }>
-                    <Text style={{ color: COLOR_BLACK }}>{ props.messageToSign }</Text>
+                    <Text style={{ color: colors.black }}>{ props.messageToSign }</Text>
                 </ScrollView>
                 <View style={{ height: 24 }} />
                 <SimpleButtonPair

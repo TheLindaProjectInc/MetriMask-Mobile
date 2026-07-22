@@ -7,7 +7,7 @@ import { Insight } from "metrixjs-wallet";
 import { MC } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
 import { WorkFunctionResult } from "./MainView";
-import { commonStyles, InvalidMessage, SimpleButton, SimpleTextInput, TitleBar } from "./common";
+import { useCommonStyles, InvalidMessage, SimpleButton, SimpleTextInput, TitleBar } from "./common";
 import { USDPriceFinder } from "../USDPriceFinder";
 
 
@@ -28,6 +28,7 @@ let loginUnderway        : boolean = false;
 
 export function LoginView(props : LoginViewProps) : JSX.Element
     {
+    const commonStyles = useCommonStyles();
     const [ useSecureInput, setUseSecureInput ] = useState<boolean>(true);
     const [ password, setPassword ] = useState<string>("");
     const [ invalidPassword, setInvalidPassword ] = useState<boolean>(false);

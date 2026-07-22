@@ -7,7 +7,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { MC } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
 import { WorkFunctionResult } from "./MainView";
-import { commonStyles, InvalidMessage, TitleBar, SimpleButton, SimpleTextInput, DoubleDoublet } from "./common";
+import { useCommonStyles, InvalidMessage, TitleBar, SimpleButton, SimpleTextInput, DoubleDoublet } from "./common";
 import { AccountManager } from "../AccountManager";
 import { nim } from "../NetInfo";
 import { USDPriceFinder } from "../USDPriceFinder";
@@ -35,6 +35,7 @@ export type ImportAccountViewProps =
 
 export function ImportAccountView(props : ImportAccountViewProps) : JSX.Element
     {
+    const commonStyles = useCommonStyles();
     const [ param, setParam ] = useState<string>(props.param ? props.param : "");
     const [ errorMsg, setErrorMsg ] = useState<string>(props.errMsg ? props.errMsg : "");
 

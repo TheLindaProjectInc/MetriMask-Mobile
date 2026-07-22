@@ -9,7 +9,8 @@ import Clipboard from '@react-native-clipboard/clipboard';
 
 import { MC, MRX_DECIMALS } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
-import { commonStyles, DoubleDoublet, formatSatoshi, SimpleDoublet, TitleBar, SimpleButton, AddressQuasiDoublet, COLOR_BLACK } from "./common";
+import { useCommonStyles, DoubleDoublet, formatSatoshi, SimpleDoublet, TitleBar, SimpleButton, AddressQuasiDoublet } from "./common";
+import { useThemeColors } from "./theme";
 
 
 
@@ -20,6 +21,8 @@ export type ReceiveViewProps =
 
 export function ReceiveView(props : ReceiveViewProps) : JSX.Element
     {
+    const colors = useThemeColors();
+    const commonStyles = useCommonStyles();
     const walletNavigation = useNavigation<StackNavigationProp<any>>();
     const am = MC.getMC().storage.accountManager;
     const layout = useWindowDimensions();
@@ -35,7 +38,7 @@ export function ReceiveView(props : ReceiveViewProps) : JSX.Element
     function renderBalanceUSD() : JSX.Element | null
         {
         if (am.current.wm.balanceUSD)
-            return (<Text style={{ color: COLOR_BLACK }}>{ "$ " + am.current.wm.balanceUSD }</Text>);
+            return (<Text style={{ color: colors.black }}>{ "$ " + am.current.wm.balanceUSD }</Text>);
         else
             return null;
         }

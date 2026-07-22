@@ -6,7 +6,8 @@ import { StackNavigationProp } from "@react-navigation/stack";
 
 import { WALLET_SCREENS } from "./WalletView";
 import { MC, MRX_DECIMALS } from "../mc";
-import { commonStyles, SimpleDoublet, SimpleButton, TitleBar, COLOR_BLACK, validateAndSatoshizeFloatStr } from "./common";
+import { useCommonStyles, SimpleDoublet, SimpleButton, TitleBar, validateAndSatoshizeFloatStr } from "./common";
+import { useThemeColors } from "./theme";
 import { USDPriceFinder } from "../USDPriceFinder";
 import { NET_ID } from "../NetInfo";
 
@@ -33,6 +34,8 @@ export type TransactionSentViewProps = TransactionSentViewSerializableProps &
 
 export function TransactionSentView(props : TransactionSentViewProps) : JSX.Element
     {
+    const colors = useThemeColors();
+    const commonStyles = useCommonStyles();
     const walletNavigation = useNavigation<StackNavigationProp<any>>();
     const am = MC.getMC().storage.accountManager;
     const accountName : string = am.current.accountName;
@@ -55,7 +58,7 @@ export function TransactionSentView(props : TransactionSentViewProps) : JSX.Elem
             <View style={ commonStyles.horizontalBar }/>
             <View style={ commonStyles.squeezed }>
                 <View style={{ height: 24 }} />
-                <Text style={{ color: COLOR_BLACK }}>{ `A transaction has been successfully started to send ${ amountAndSymbol() } from account ${ accountName } to ${ whereTo }. When the transaction has been confirmed the funds will be available at the destination.` }</Text>
+                <Text style={{ color: colors.black }}>{ `A transaction has been successfully started to send ${ amountAndSymbol() } from account ${ accountName } to ${ whereTo }. When the transaction has been confirmed the funds will be available at the destination.` }</Text>
                 <View style={{ height: 24 }} />
                 <SimpleDoublet title="Transaction Id:" text={ props.txid }/>
                 <View style={{ height: 7 }} />

@@ -4,7 +4,8 @@ import { View, TextInput, NativeSyntheticEvent, TextInputEndEditingEventData, Te
 import { MC, MRX_DECIMALS } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
 import { WorkFunctionResult } from "./MainView";
-import { AddressQuasiDoublet, COLOR_BLACK, commonStyles, DoubleDoublet, formatSatoshi, InvalidMessage, SimpleButton, SimpleDoublet, SimpleTextInput, TitleBar } from "./common";
+import { AddressQuasiDoublet, useCommonStyles, DoubleDoublet, formatSatoshi, InvalidMessage, SimpleButton, SimpleDoublet, SimpleTextInput, TitleBar } from "./common";
+import { useThemeColors } from "./theme";
 
 
 
@@ -20,6 +21,8 @@ let exportInProgress : boolean = false;
 
 export function ExportAccountView(props : ExportAccountViewProps) : JSX.Element
     {
+    const colors = useThemeColors();
+    const commonStyles = useCommonStyles();
     const am = MC.getMC().storage.accountManager;
 
     const [ useSecureInput, setUseSecureInput ] = useState<boolean>(true);
@@ -142,7 +145,7 @@ export function ExportAccountView(props : ExportAccountViewProps) : JSX.Element
     function renderBalanceUSD() : JSX.Element | null
         {
         if (am.current.wm.balanceUSD)
-            return (<Text style={{ color: COLOR_BLACK }}>{ "$ " + am.current.wm.balanceUSD }</Text>);
+            return (<Text style={{ color: colors.black }}>{ "$ " + am.current.wm.balanceUSD }</Text>);
         else
             return null;
         }
@@ -160,7 +163,7 @@ export function ExportAccountView(props : ExportAccountViewProps) : JSX.Element
                 <SimpleDoublet title="Balance:" text={ formatSatoshi(am.current.wm.balanceSat, MRX_DECIMALS) + " MRX" }/>
                 { renderBalanceUSD() }
                 <View style={{ height: 24 }} />
-                <Text style={{ color: COLOR_BLACK }}>To export the account in Wallet Interchange Format (WIF) enter the password below.</Text>
+                <Text style={{ color: colors.black }}>To export the account in Wallet Interchange Format (WIF) enter the password below.</Text>
                 <View style={{ height: 24 }}/>
                 { renderPasswordInput() }
                 <View style={{ height: 24 }}/>

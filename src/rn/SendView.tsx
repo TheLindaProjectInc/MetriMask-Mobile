@@ -9,7 +9,8 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { MC, MRX_DECIMALS, BIG_0, ADDRESS_SYNTAX } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
 import { WorkFunctionResult } from "./MainView";
-import { commonStyles, DoubleDoublet, formatSatoshi, validateAndSatoshizeFloatStr, SimpleDoublet, TitleBar, SimpleTextInput, InvalidMessage, SimpleButtonPair, SimpleTextInputPair, LOADING_STR, validateIntStr, AddressQuasiDoublet, noumberOfDecimals, COLOR_DARKISH_PURPLE, COLOR_MIDDLE_GREY, COLOR_BLACK } from "./common";
+import { useCommonStyles, dropDownPickerThemeProps, DoubleDoublet, formatSatoshi, validateAndSatoshizeFloatStr, SimpleDoublet, TitleBar, SimpleTextInput, InvalidMessage, SimpleButtonPair, SimpleTextInputPair, LOADING_STR, validateIntStr, AddressQuasiDoublet, noumberOfDecimals } from "./common";
+import { useThemeColors } from "./theme";
 import { MRC20Token } from "../MRC20";
 import { QR_SCANNER_TARGETS } from "./QRAddressScanView";
 import { DEFAULT_GAS_LIMIT, DEFAULT_GAS_PRICE_SATOSHI } from "../mc";
@@ -73,6 +74,8 @@ export function getSendViewLoadCount() : number
 
 export function SendView(props : SendViewProps) : JSX.Element
     {
+    const colors = useThemeColors();
+    const commonStyles = useCommonStyles();
     const walletNavigation = useNavigation<StackNavigationProp<any>>();
     const am = MC.getMC().storage.accountManager;
 
@@ -425,7 +428,7 @@ export function SendView(props : SendViewProps) : JSX.Element
     function renderBalanceUSD() : JSX.Element | null
         {
         if (tokenDDValue == "" && am.current.wm.balanceUSD)
-            return (<Text style={{ color: COLOR_BLACK }}>{ "$ " + am.current.wm.balanceUSD }</Text>);
+            return (<Text style={{ color: colors.black }}>{ "$ " + am.current.wm.balanceUSD }</Text>);
         else
             return null;
         }
@@ -440,7 +443,7 @@ export function SendView(props : SendViewProps) : JSX.Element
         if (amountToSend <= BIG_0) return null;
         const amountToSendUSD : string = priceFinder.satoshiToUSD(amountToSend);
         if (!amountToSendUSD) return null;
-        return (<Text style={{ color: COLOR_BLACK }}>{ "$ " + amountToSendUSD }</Text>);
+        return (<Text style={{ color: colors.black }}>{ "$ " + amountToSendUSD }</Text>);
         }
 
     function FeeOrGas() : JSX.Element
@@ -457,10 +460,9 @@ export function SendView(props : SendViewProps) : JSX.Element
             {
             return (
                 <>
-                    <Text style={{ color: COLOR_MIDDLE_GREY}}>Transaction speed:</Text>
+                    <Text style={{ color: colors.middleGrey}}>Transaction speed:</Text>
                     <DropDownPicker
-                        dropDownContainerStyle={{ borderColor: COLOR_DARKISH_PURPLE }}
-                        style={{ borderColor: COLOR_DARKISH_PURPLE }}
+                        { ...(dropDownPickerThemeProps(colors) as any) }
                         items={ feerateDDItems }
                         open={ feerateDDOpen }
                         value={ feerateDDValue }
@@ -506,10 +508,9 @@ export function SendView(props : SendViewProps) : JSX.Element
                 <SimpleDoublet title="From Account Balance:" text={ balanceStr }/>
                 { renderBalanceUSD() }
                 <View style={{ height: 14 }} />
-                <Text style={{ color: COLOR_MIDDLE_GREY}}>Token:</Text>
+                <Text style={{ color: colors.middleGrey}}>Token:</Text>
                 <DropDownPicker
-                    dropDownContainerStyle={{ borderColor: COLOR_DARKISH_PURPLE }}
-                    style={{ borderColor: COLOR_DARKISH_PURPLE }}
+                    { ...(dropDownPickerThemeProps(colors) as any) }
                     maxHeight={ 400 }
                     items={ tokenDDItems }
                     open={ tokenDDOpen }

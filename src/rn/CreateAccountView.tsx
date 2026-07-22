@@ -8,7 +8,8 @@ import { MC } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
 import { WorkFunctionResult } from "./MainView";
 import { NET_ID } from "../NetInfo";
-import { commonStyles, SimpleTextInput, TitleBar, SimpleButton, InvalidMessage, netInfoDropDownItems, COLOR_DARKISH_PURPLE, COLOR_MIDDLE_GREY } from "./common";
+import { useCommonStyles, dropDownPickerThemeProps, SimpleTextInput, TitleBar, SimpleButton, InvalidMessage, netInfoDropDownItems } from "./common";
+import { useThemeColors } from "./theme";
 import { USDPriceFinder } from "../USDPriceFinder";
 
 
@@ -28,6 +29,8 @@ type CreateAccountViewProps =
 
 export function CreateAccountView(props : CreateAccountViewProps) : JSX.Element
     {
+    const colors = useThemeColors();
+    const commonStyles = useCommonStyles();
     const [ useSecureInput, setUseSecureInput ] = useState<boolean>(true);
     const [ password, setPassword ] = useState<string>("");
     const [ confirmPassword, setConfirmPassword ] = useState<string>("");
@@ -243,10 +246,9 @@ export function CreateAccountView(props : CreateAccountViewProps) : JSX.Element
             <View style={ commonStyles.horizontalBar }/>
             <View style={{ height: 24 }}/>
             <View style={ commonStyles.squeezed }>
-                <Text style={{ color: COLOR_MIDDLE_GREY }}>Account Network:</Text>
+                <Text style={{ color: colors.middleGrey }}>Account Network:</Text>
                 <DropDownPicker
-                    dropDownContainerStyle={{ borderColor: COLOR_DARKISH_PURPLE }}
-                    style={{ borderColor: COLOR_DARKISH_PURPLE }}
+                    { ...(dropDownPickerThemeProps(colors) as any) }
                     onOpen={ () : void => setErrorMsg("") }
                     onClose={ () : void => setErrorMsg("") }
                     onSelectItem={ () : void => setErrorMsg("") }

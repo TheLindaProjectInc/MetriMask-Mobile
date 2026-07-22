@@ -1,134 +1,137 @@
 import "../../shimWrapper.js";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { View, Text, Alert, Platform, BackHandler, StyleSheet, NativeSyntheticEvent, TextInputEndEditingEventData, TextInput } from "react-native";
-import { TextInput as PaperTextInput, Button as PaperButton, IconButton, TouchableRipple } from "react-native-paper";
+import { TextInput as PaperTextInput, IconButton, TouchableRipple } from "react-native-paper";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { ItemType } from "react-native-dropdown-picker";
 
 import { BIG_0 } from "../mc";
 import { Account } from "../Account";
 import { NetInfo, NetInfoManager, NET_ID, nim } from "../NetInfo";
+import { ThemeColors, useThemeColors } from "./theme";
 
 
 
-export const COLOR_WHITE              : string = "#FFFFFF";
-export const COLOR_LIGHT_GREY         : string = "#E0E0E0";
-export const COLOR_MIDDLE_GREY        : string = "#808080";
-export const COLOR_BLACK              : string = "#000000";
-export const COLOR_DARK_PURPLE        : string = "#600060";
-export const COLOR_DARKISH_PURPLE     : string = "#900090";
-export const COLOR_GREEN_WASH         : string = "#E0FFE0";
-export const COLOR_PURPLE_RIPPLE      : string = "#FFC0FF";
-export const COLOR_DARK_PURPLE_RIPPLE : string = "#D080D0";
-export const COLOR_RED                : string = "#FF0000";
-export const COLOR_RED_WASH           : string = "#FFE0E0";
-export const COLOR_GREEN              : string = "#00FF00";
-export const COLOR_DULL_GREEN         : string = "#30C030";
-export const COLOR_LIGHT_PURPLE       : string = "#FFF0FF";
-export const COLOR_LIGHTISH_PURPLE    : string = "#FFE0FF";
+export function buildCommonStyles(colors : ThemeColors)
+    {
+    return StyleSheet.create
+        ({
+        containingView:
+            {
+            flex: 1,
+            flexDirection: "column",
+            backgroundColor: colors.white,
+            margin: 0,
+            padding: 0,
+            },
+        centeringView:
+            {
+            alignItems: "center",
+            marginLeft: 24,
+            marginRight: 24,
+            },
+        rowContainer:
+            {
+            flexDirection: "row",
+            margin: 0,
+            padding: 0,
+            alignContent: "center",
+            },
+        columnContainerV2:
+            {
+            flexDirection: "column",
+            margin: 0,
+            padding: 0,
+            alignContent: "center",
+            },
+        borderedScroller:
+            {
+            flex: 1,
+            padding: 6,
+            borderWidth: 1,
+            borderRadius: 4,
+            borderColor: colors.darkishPurple
+            },
+        icon:
+            {
+            margin: 0,
+            padding: 0,
+            },
+        topBar:
+            {
+            height: 40,
+            backgroundColor: colors.white,
+            flexDirection: "row",
+            alignItems: "center"
+            },
+        titleContainingView:
+            {
+            alignItems: "center",
+            flex: 5,
+            },
+        titleText:
+            {
+            fontSize: 20,
+            color: colors.black,
+            fontWeight: "bold",
+            },
+        horizontalBar:
+            {
+            height: 3,
+            backgroundColor: colors.darkPurple,
+            },
+        squeezed:
+            {
+            marginLeft: 24,
+            marginRight: 24,
+            },
+        invalidView:
+            {
+            flexDirection: "row",
+            },
+        invalidViewText:
+            {
+            padding: 24,
+            color: colors.black,
+            backgroundColor: colors.redWash,
+            fontWeight: "bold",
+            },
+        flex1:
+            {
+            flex: 1,
+            margin: 0,
+            padding: 0,
+            },
+        });
+    }
 
+export function useCommonStyles() : ReturnType<typeof buildCommonStyles>
+    {
+    const colors = useThemeColors();
+    return useMemo(() : ReturnType<typeof buildCommonStyles> => buildCommonStyles(colors), [ colors ]);
+    }
 
-
-export const commonStyles = StyleSheet.create
-    ({
-    containingView:
+export function dropDownPickerThemeProps(colors : ThemeColors)
+    {
+    return (
         {
-        flex: 1,
-        flexDirection: "column",
-        backgroundColor: COLOR_WHITE,
-        margin: 0,
-        padding: 0,
-        border: 0,
-        },
-    centeringView:
-        {
-        alignItems: "center",
-        marginLeft: 24,
-        marginRight: 24,
-        },
-    rowContainer:
-        {
-        flexDirection: "row",
-        margin: 0,
-        padding: 0,
-        border: 0,
-        alignContent: "center",
-        },
-    columnContainerV2:
-        {
-        flexDirection: "column",
-        margin: 0,
-        padding: 0,
-        border: 0,
-        alignContent: "center",
-        },
-    borderedScroller:
-        {
-        flex: 1,
-        padding: 6,
-        borderWidth: 1,
-        borderRadius: 4,
-        borderColor: COLOR_DARKISH_PURPLE
-        },
-    icon:
-        {
-        margin: 0,
-        padding: 0,
-        border: 0,
-        },
-    topBar:
-        {
-        height: 40,
-        backgroundColor: COLOR_WHITE,
-        flexDirection: "row",
-        alignItems: "center"
-        },
-    titleContainingView:
-        {
-        alignItems: "center",
-        flex: 5,
-        },
-    titleText:
-        {
-        fontSize: 20,
-        color: COLOR_BLACK,
-        fontWeight: "bold",
-        },
-    horizontalBar:
-        {
-        height: 3,
-        backgroundColor: COLOR_DARK_PURPLE,
-        },
-    squeezed:
-        {
-        marginLeft: 24,
-        marginRight: 24,
-        },
-    invalidView:
-        {
-        flexDirection: "row",
-        },
-    invalidViewText:
-        {
-        padding: 24,
-        color: COLOR_BLACK,
-        backgroundColor: COLOR_RED_WASH,
-        fontWeight: "bold",
-        },
-    flex1:
-        {
-        flex: 1,
-        margin: 0,
-        padding: 0,
-        border: 0,
-        },
-    });
+        style: { borderColor: colors.darkishPurple, backgroundColor: colors.white },
+        textStyle: { color: colors.black },
+        placeholderStyle: { color: colors.middleGrey },
+        dropDownContainerStyle: { borderColor: colors.darkishPurple, backgroundColor: colors.white },
+        listItemLabelStyle: { color: colors.black },
+        selectedItemLabelStyle: { color: colors.darkPurple },
+        arrowIconStyle: { tintColor: colors.black },
+        tickIconStyle: { tintColor: colors.darkPurple },
+        });
+    }
 
 
 
 export const LOADING_STR = "";
 export const NO_INFO_STR = "< Failed to Load >";
-    
+
 
 
 export function normalizeProps(props : any) : any
@@ -197,6 +200,7 @@ export type InvalidMessageProps =
 
 export function InvalidMessage(props : InvalidMessageProps) : JSX.Element
     {
+    const commonStyles = useCommonStyles();
     return (
         <View style={ commonStyles.invalidView }>
             <View style={{ flex: 1 }}/>
@@ -216,13 +220,15 @@ export type TitleBarProps =
 
 export function TitleBar(props : TitleBarProps) : JSX.Element
     {
+    const colors = useThemeColors();
+    const commonStyles = useCommonStyles();
     return (
         <View style={ commonStyles.topBar }>
-            <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } size={ 24 } icon="menu" onPress={ props.onBurgerPressed }/>
+            <IconButton style={ commonStyles.icon } iconColor={ colors.black } rippleColor={ colors.purpleRipple } size={ 24 } icon="menu" onPress={ props.onBurgerPressed }/>
             <View style={ commonStyles.titleContainingView }>
                 <Text style={ commonStyles.titleText }>{ props.title }</Text>
             </View>
-            <IconButton style={ commonStyles.icon } iconColor={ COLOR_WHITE } size={ 24 } icon="menu"/>
+            <IconButton style={ commonStyles.icon } iconColor={ colors.white } size={ 24 } icon="menu"/>
         </View>
         );
     }
@@ -236,6 +242,7 @@ export type BurgerlessTitleBarProps =
 
 export function BurgerlessTitleBar(props : BurgerlessTitleBarProps) : JSX.Element
     {
+    const commonStyles = useCommonStyles();
     return (
         <View style={ commonStyles.topBar }>
             <View style={ commonStyles.titleContainingView }>
@@ -257,19 +264,21 @@ export type SimpleDoubletProps =
 
 export function SimpleDoublet(props : SimpleDoubletProps) : JSX.Element
     {
+    const colors = useThemeColors();
+    const commonStyles = useCommonStyles();
     if (props.icon)
         {
         return (
             <View style={ commonStyles.rowContainer }>
                 <View style={ commonStyles.columnContainerV2 }>
                     <View style={ commonStyles.flex1 }/>
-                    <Text style={{ color: COLOR_MIDDLE_GREY }}>{ props.title }</Text>
-                    <Text style={{ color: COLOR_BLACK }}>{ props.text }</Text>
+                    <Text style={{ color: colors.middleGrey }}>{ props.title }</Text>
+                    <Text style={{ color: colors.black }}>{ props.text }</Text>
                 </View>
                 <View style={{ width: 3 }}/>
                 <View style={ commonStyles.columnContainerV2 }>
                     <View style={ commonStyles.flex1 }/>
-                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } size={ 24 } icon={ props.icon } onPress={ props.onPress }/>
+                    <IconButton style={ commonStyles.icon } iconColor={ colors.black } rippleColor={ colors.purpleRipple } size={ 24 } icon={ props.icon } onPress={ props.onPress }/>
                 </View>
                 <View style={ commonStyles.flex1 }/>
             </View>
@@ -278,8 +287,8 @@ export function SimpleDoublet(props : SimpleDoubletProps) : JSX.Element
     else
         return (
             <>
-                <Text style={{ color: COLOR_MIDDLE_GREY }}>{ props.title }</Text>
-                <Text style={{ color: COLOR_BLACK }}>{ props.text }</Text>
+                <Text style={{ color: colors.middleGrey }}>{ props.title }</Text>
+                <Text style={{ color: colors.black }}>{ props.text }</Text>
             </>
             );
     }
@@ -298,13 +307,15 @@ export type AddressQuasiDoubletProps =
 
 export function AddressQuasiDoublet(props : AddressQuasiDoubletProps) : JSX.Element
     {
+    const colors = useThemeColors();
+    const commonStyles = useCommonStyles();
     const address : string = props.acnt ? props.acnt.wm.address : (props.address ? props.address : "");
     const mnsName : string = props.acnt ? props.acnt.wm.mnsNmae : (props.mnsName ? props.mnsName : "");
 
     function renderMnsName() : JSX.Element | null
         {
         if (mnsName.length)
-            return (<Text style={{ color: COLOR_BLACK }}>{ mnsName }</Text>);
+            return (<Text style={{ color: colors.black }}>{ mnsName }</Text>);
         else
             return null;
         }
@@ -315,14 +326,14 @@ export function AddressQuasiDoublet(props : AddressQuasiDoubletProps) : JSX.Elem
             <View style={ commonStyles.rowContainer }>
                 <View style={ commonStyles.columnContainerV2 }>
                     <View style={ commonStyles.flex1 }/>
-                    <Text style={{ color: COLOR_MIDDLE_GREY }}>{ props.title }</Text>
+                    <Text style={{ color: colors.middleGrey }}>{ props.title }</Text>
                     { renderMnsName() }
-                    <Text style={{ color: COLOR_BLACK }}>{ address }</Text>
+                    <Text style={{ color: colors.black }}>{ address }</Text>
                 </View>
                 <View style={{ width: 3 }}/>
                 <View style={ commonStyles.columnContainerV2 }>
                     <View style={ commonStyles.flex1 }/>
-                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } size={ 24 } icon={ props.icon } onPress={ props.onPress }/>
+                    <IconButton style={ commonStyles.icon } iconColor={ colors.black } rippleColor={ colors.purpleRipple } size={ 24 } icon={ props.icon } onPress={ props.onPress }/>
                 </View>
                 <View style={ commonStyles.flex1 }/>
             </View>
@@ -332,9 +343,9 @@ export function AddressQuasiDoublet(props : AddressQuasiDoubletProps) : JSX.Elem
         {
         return (
             <>
-                <Text style={{ color: COLOR_MIDDLE_GREY }}>{ props.title }</Text>
+                <Text style={{ color: colors.middleGrey }}>{ props.title }</Text>
                 { renderMnsName() }
-                <Text style={{ color: COLOR_BLACK }}>{ address }</Text>
+                <Text style={{ color: colors.black }}>{ address }</Text>
             </>
             );
         }
@@ -352,6 +363,7 @@ export type DoubleDoubletProps =
 
 export function DoubleDoublet(props : DoubleDoubletProps) : JSX.Element
     {
+    const commonStyles = useCommonStyles();
     return (
         <View style={ commonStyles.rowContainer }>
             <View style={ commonStyles.flex1 }>
@@ -387,28 +399,37 @@ export type SimpleTextInputProps =
 
 export function SimpleTextInput(props : SimpleTextInputProps) : JSX.Element
     {
+    const colors = useThemeColors();
     const icon = props.icon;
     const onPressIcon = props.onPressIcon;
     if (props.rnRef) (props as any).ref = props.rnRef;
     delete props["icon"];
     delete props["onPressIcon"];
     delete props["rnRef"];
+    // Paper's TextInput isn't wrapped in a PaperProvider, so without an explicit `theme` override
+    // it always falls back to Paper's own default LIGHT theme for its fill/label colors, regardless
+    // of our app's dark mode.
+    const paperTheme = { colors: { surfaceVariant: colors.lightGrey, onSurfaceVariant: colors.middleGrey } };
     if (icon && onPressIcon)
         return  (
             <PaperTextInput
                 { ...(props as any) }
-                selectionColor={ COLOR_DARK_PURPLE }
-                underlineColor={ COLOR_DARKISH_PURPLE }
-                activeUnderlineColor={ COLOR_DARK_PURPLE }
+                theme={ paperTheme }
+                textColor={ colors.black }
+                selectionColor={ colors.darkPurple }
+                underlineColor={ colors.darkishPurple }
+                activeUnderlineColor={ colors.darkPurple }
                 right={ (<PaperTextInput.Icon icon={ icon } onPress={ onPressIcon }/>) }/>
             );
     else
         return  (
             <PaperTextInput
                 { ...(props as any) }
-                selectionColor={ COLOR_DARK_PURPLE }
-                underlineColor={ COLOR_DARKISH_PURPLE }
-                activeUnderlineColor={ COLOR_DARK_PURPLE }/>
+                theme={ paperTheme }
+                textColor={ colors.black }
+                selectionColor={ colors.darkPurple }
+                underlineColor={ colors.darkishPurple }
+                activeUnderlineColor={ colors.darkPurple }/>
             );
     }
 
@@ -422,6 +443,7 @@ export type SimpleTextInputPairProps =
 
 export function SimpleTextInputPair(props : SimpleTextInputPairProps) : JSX.Element
     {
+    const commonStyles = useCommonStyles();
     return (
         <View style={ commonStyles.rowContainer }>
             <View style={ commonStyles.flex1 }>
@@ -447,22 +469,34 @@ export type SimpleButtonProps =
 
 export function SimpleButton(props : SimpleButtonProps) : JSX.Element
     {
+    const colors = useThemeColors();
+    const commonStyles = useCommonStyles();
     const text = props.text;
     delete (props as any)["text"];
-    const testColor : string = props.disabled ? COLOR_MIDDLE_GREY : COLOR_BLACK;
+    const testColor : string = props.disabled ? colors.middleGrey : colors.black;
+    const iconColor : string = props.disabled ? colors.middleGrey : colors.darkPurple;
     if (text)
+        // Deliberately built from primitives (View/TouchableRipple) rather than react-native-paper's
+        // Button: Paper's outlined Button wraps content in a Surface driven by an Animated.Value
+        // elevation (even at value 0), and that Surface/elevation machinery intermittently fails to
+        // draw the bottom edge of the border under Fabric on Android. Plain primitives sidestep it.
         return (
-            <PaperButton { ...(props as any) } style={{ borderColor: COLOR_DARKISH_PURPLE, borderWidth: 1 }} mode="outlined" uppercase={ false } color={ COLOR_DARK_PURPLE }>
-                <Text style={{ color: testColor }}>{ text }</Text>
-            </PaperButton>
+            <View style={{ borderColor: colors.darkishPurple, borderWidth: 1, borderRadius: 20, overflow: "hidden" }}>
+                <TouchableRipple rippleColor={ colors.purpleRipple } onPress={ props.onPress } disabled={ props.disabled }>
+                    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", paddingVertical: 9, paddingHorizontal: 16 }}>
+                        { props.icon ? <MaterialCommunityIcons name={ props.icon } color={ iconColor } size={ 18 } style={{ marginRight: 8 }}/> : null }
+                        <Text style={{ color: testColor }}>{ text }</Text>
+                    </View>
+                </TouchableRipple>
+            </View>
             );
     else if (props.icon)
         return (
-            <IconButton { ...(props as any) } style={ commonStyles.icon } size={ 24 }/>
+            <IconButton { ...(props as any) } iconColor={ colors.black } style={ commonStyles.icon } size={ 24 }/>
             );
     else
         return (
-            <IconButton { ...(props as any) } style={ commonStyles.icon } size={ 24 } icon="help"/>
+            <IconButton { ...(props as any) } iconColor={ colors.black } style={ commonStyles.icon } size={ 24 } icon="help"/>
             );
     }
 
@@ -476,6 +510,7 @@ export type SimpleButtonPairProps =
 
 export function SimpleButtonPair(props : SimpleButtonPairProps) : JSX.Element
     {
+    const commonStyles = useCommonStyles();
     return (
         <View style={ commonStyles.rowContainer }>
             <View style={ commonStyles.flex1 }>
@@ -501,21 +536,22 @@ export type MenuOptionProps =
 
 export function MenuOption(props : MenuOptionProps) : JSX.Element
     {
+    const colors = useThemeColors();
     if (props.disabled)
         return (
             <View style={{ flexDirection: "row", margin: 0, borderWidth: 0, padding: 0 }}>
                 <View style={{ width: 12 }}/>
-                <IconButton icon={ props.icon } disabled={ true } size={ 24 } style={{ margin: 0, padding: 0, borderWidth: 0 }}/>
-                <Text style={{ color: COLOR_MIDDLE_GREY, paddingTop: 8, paddingBottom: 6, paddingLeft: 6, paddingRight: 18 }}>{ props.label }</Text>
+                <IconButton icon={ props.icon } iconColor={ colors.middleGrey } disabled={ true } size={ 24 } style={{ margin: 0, padding: 0, borderWidth: 0 }}/>
+                <Text style={{ color: colors.middleGrey, paddingTop: 8, paddingBottom: 6, paddingLeft: 6, paddingRight: 18 }}>{ props.label }</Text>
             </View>
             );
     else
         return (
-            <TouchableRipple onPress={ props.onPress } rippleColor={ COLOR_DARK_PURPLE_RIPPLE }>
+            <TouchableRipple onPress={ props.onPress } rippleColor={ colors.darkPurpleRipple }>
                 <View style={{ flexDirection: "row", margin: 0, borderWidth: 0, padding: 0 }}>
                     <View style={{ width: 12 }}/>
-                    <IconButton icon={ props.icon } size={ 24 } style={{ margin: 0, padding: 0, borderWidth: 0 }}/>
-                    <Text style={{ color: COLOR_BLACK, paddingTop: 8, paddingBottom: 6, paddingLeft: 6, paddingRight: 18 }}>{ props.label }</Text>
+                    <IconButton icon={ props.icon } iconColor={ colors.black } size={ 24 } style={{ margin: 0, padding: 0, borderWidth: 0 }}/>
+                    <Text style={{ color: colors.black, paddingTop: 8, paddingBottom: 6, paddingLeft: 6, paddingRight: 18 }}>{ props.label }</Text>
                 </View>
             </TouchableRipple>
             );
@@ -528,7 +564,7 @@ const CC_1     = "1".charCodeAt(0);
 const CC_9     = "9".charCodeAt(0);
 const CC_DOT   = ".".charCodeAt(0);
 const CC_COMMA = ",".charCodeAt(0);
-    
+
 export function formatSatoshi(n : bigint | number | string, decimals : number) : string
     {
     switch (typeof n)
