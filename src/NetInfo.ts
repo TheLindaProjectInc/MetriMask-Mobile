@@ -1,4 +1,4 @@
-import ethers from "ethers";
+import { ethers } from "ethers";
 import { Network, networks } from "metrixjs-wallet";
 import { MNS, Name, getMNSAddress, DefaultReverseResolver, getMNSContract, BaseResolver } from '@metrixnames/mnslib';
 import ABI from '@metrixnames/mnslib/lib/abi';

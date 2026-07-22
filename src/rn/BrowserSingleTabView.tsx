@@ -4,38 +4,42 @@ import { WebView, WebViewMessageEvent } from "react-native-webview";
 import { WebViewNavigation, WebViewNavigationEvent, WebViewErrorEvent } from "react-native-webview/lib/WebViewTypes";
 import { IconButton, ProgressBar } from 'react-native-paper';
 
-import { COLOR_BLACK, COLOR_DARK_PURPLE, COLOR_PURPLE_RIPPLE, commonStyles } from "./common";
+import { useCommonStyles } from "./common";
+import { ThemeColors, useThemeColors } from "./theme";
 import { MC } from "../mc";
 import { parseBrowserUrl } from "../parseBrowserUrl";
 
 
 
-const browserTabStyles = StyleSheet.create
-    ({
-    hiddenContainingView:
-        {
-        flex: 0,
-        flexDirection: "column",
-        opacity: 0,
-        display: "none",
-        width: 0,
-        height: 0,
-        },
-    webView:
-        {
-        flex: 1,
-        zIndex: 1
-        },
-    urlTextInput:
-        {
-        flex: 1,
-        height: 40,
-        color: COLOR_BLACK,
-        borderWidth: 0,
-        paddingLeft: 8,
-        paddingRight: 8,
-        },
-    });
+function buildBrowserTabStyles(colors : ThemeColors)
+    {
+    return StyleSheet.create
+        ({
+        hiddenContainingView:
+            {
+            flex: 0,
+            flexDirection: "column",
+            opacity: 0,
+            display: "none",
+            width: 0,
+            height: 0,
+            },
+        webView:
+            {
+            flex: 1,
+            zIndex: 1
+            },
+        urlTextInput:
+            {
+            flex: 1,
+            height: 40,
+            color: colors.black,
+            borderWidth: 0,
+            paddingLeft: 8,
+            paddingRight: 8,
+            },
+        });
+    }
 
 
 
@@ -73,6 +77,9 @@ export type BrowserSingleTabViewProps =
 
 export default function BrowserSingleTabView(props : BrowserSingleTabViewProps) : JSX.Element
     {
+    const colors = useThemeColors();
+    const commonStyles = useCommonStyles();
+    const browserTabStyles = buildBrowserTabStyles(colors);
     const [ currentUrl, setCurrentUrl ] = useState<string>((props.initialUrl || props.initialUrl == "") ? props.initialUrl : MC.getMC().storage.browserHomePage);
     const [ urlInputText, setUrlInputText ] = useState<string>(currentUrl);
     const [ canGoBack, setCanGoBack ] = useState<boolean>(false);
@@ -216,9 +223,9 @@ export default function BrowserSingleTabView(props : BrowserSingleTabViewProps) 
     function WebProgressBar() : JSX.Element
         {
         if (showLoading)
-            return (<ProgressBar style={{ height: 3 }} indeterminate color={ COLOR_DARK_PURPLE }/>);
+            return (<ProgressBar style={{ height: 3 }} indeterminate color={ colors.darkPurple }/>);
         else
-            return (<ProgressBar style={{ height: 3 }} progress={ 1 } color={ COLOR_DARK_PURPLE }/>);
+            return (<ProgressBar style={{ height: 3 }} progress={ 1 } color={ colors.darkPurple }/>);
         }
 
     const BLANK_SOURCE = { html: "<!doctype html><html><head></head><body></body></html>" };
@@ -229,7 +236,7 @@ export default function BrowserSingleTabView(props : BrowserSingleTabViewProps) 
         <View style={ isVisible() ? commonStyles.containingView : browserTabStyles.hiddenContainingView } { ...(Platform.OS === "android" && isVisible() ? { collapsable: false } : { }) }>
             { menu ? menu() : null }
             <View style={ commonStyles.topBar }>
-                <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } size={ 24 } icon="menu" onPress={ onBurgerPressed }/>
+                <IconButton style={ commonStyles.icon } rippleColor={ colors.purpleRipple } size={ 24 } icon="menu" onPress={ onBurgerPressed }/>
                 <TextInput
                     style={ browserTabStyles.urlTextInput }
                     onChangeText={ onChangeUrlTextInput }

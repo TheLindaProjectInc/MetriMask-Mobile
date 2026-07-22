@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { BrowserTabContext } from "./BrowserTabContext";
 import BrowserSingleTabView, { BrowserSingleTabViewAPI, BrowserSingleTabViewProps } from "./BrowserSingleTabView";
@@ -183,30 +183,33 @@ export default function BrowserAllTabsView(props : BrowserAllTabsViewProps) : JS
     const [ activeTabIndex, setActiveTabIndex ] = useState<number>(0);
     const [ showActiveTab, setShowActiveTab ] = useState<boolean>(!props.hide);
 
-    if (props.getApi) props.getApi(
+    useEffect(() =>
         {
-        isHidden: () => !showActiveTab,
-        setHiding: setHiding,
-        activeTabId: activeTabId,
-        isActiveTabId: isActiveTabId,
-        activeTab: activeTab,
-        isActiveTab: isActiveTab,
-        activateTab: activateTab,
-        activateSoloTab: activateSoloTab,
-        closeTab: closeTab,
-        closeTabById: closeTabById,
-        closeAllTabs: closeAllTabs,
-        tabCount: tabCount,
-        tabList: () => tabArray,
-        tabAtIndex: tabAtIndex,
-        forEachTab : forEachTab,
-        mapTabs: mapTabs,
-        activateTabAtIndex: activateTabAtIndex,
-        closeTabAtIndex: closeTabAtIndex,
-        activeTabIndex: () => activeTabIndex,
-        openInOtherBrowser: openInOtherBrowser,
-        activateMenu: activateMenu,
-        dismissMenu: dismissMenu,
+        if (props.getApi) props.getApi(
+            {
+            isHidden: () => !showActiveTab,
+            setHiding: setHiding,
+            activeTabId: activeTabId,
+            isActiveTabId: isActiveTabId,
+            activeTab: activeTab,
+            isActiveTab: isActiveTab,
+            activateTab: activateTab,
+            activateSoloTab: activateSoloTab,
+            closeTab: closeTab,
+            closeTabById: closeTabById,
+            closeAllTabs: closeAllTabs,
+            tabCount: tabCount,
+            tabList: () => tabArray,
+            tabAtIndex: tabAtIndex,
+            forEachTab : forEachTab,
+            mapTabs: mapTabs,
+            activateTabAtIndex: activateTabAtIndex,
+            closeTabAtIndex: closeTabAtIndex,
+            activeTabIndex: () => activeTabIndex,
+            openInOtherBrowser: openInOtherBrowser,
+            activateMenu: activateMenu,
+            dismissMenu: dismissMenu,
+            });
         });
 
     function provideFirstTab() : BrowserTabContext
@@ -407,8 +410,9 @@ export default function BrowserAllTabsView(props : BrowserAllTabsViewProps) : JS
         return tabArray.map((tabContext : BrowserTabContextBase) : JSX.Element =>
             {
             tabContext.hookLoadEnd(props.allTabsOnLoadEnd ? props.allTabsOnLoadEnd : null);
+            const { key, ...restViewProps } = tabContext.tabViewProps;
             return (
-                <BrowserSingleTabView { ...tabContext.tabViewProps } activeTabId = { atid } onNewCanGoState = { onNewCanGoState } onBurgerPressed = { onBurgerPressed }/>
+                <BrowserSingleTabView key = { key } { ...restViewProps } activeTabId = { atid } onNewCanGoState = { onNewCanGoState } onBurgerPressed = { onBurgerPressed }/>
                 );
             });
         }

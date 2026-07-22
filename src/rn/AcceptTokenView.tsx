@@ -5,7 +5,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 
 import { MC } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
-import { commonStyles, TitleBar, formatSatoshi, SimpleDoublet, DoubleDoublet, SimpleButtonPair, SimpleTextInputPair, SimpleTextInput, InvalidMessage, validateIntStr, AddressQuasiDoublet } from "./common";
+import { useCommonStyles, TitleBar, formatSatoshi, SimpleDoublet, DoubleDoublet, SimpleButtonPair, SimpleTextInputPair, SimpleTextInput, InvalidMessage, validateIntStr, AddressQuasiDoublet } from "./common";
 import { MRC20Token, SerializableMRC20Token } from "../MRC20";
 import { AccountManager } from "../AccountManager";
 
@@ -32,6 +32,7 @@ export type AcceptTokenViewProps = AcceptTokenViewSerializableProps &
 
 export function AcceptTokenView(props : AcceptTokenViewProps) : JSX.Element
     {
+    const commonStyles = useCommonStyles();
     const walletNavigation = useNavigation<StackNavigationProp<any>>();
     const am : AccountManager = MC.getMC().storage.accountManager;
     const serializable : SerializableMRC20Token = props.token;

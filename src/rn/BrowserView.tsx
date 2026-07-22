@@ -6,91 +6,92 @@ import DropDownPicker, { ItemType } from 'react-native-dropdown-picker';
 import { MC } from "../mc";
 import BrowserAllTabsView, { BrowserAllTabsViewAPI, BrowserTabContextBase } from "./BrowserAllTabsView";
 import { BrowserTabContext } from "./BrowserTabContext";
-import { COLOR_BLACK, COLOR_DARK_PURPLE, COLOR_DARKISH_PURPLE, COLOR_PURPLE_RIPPLE, COLOR_WHITE, commonStyles, MenuOption, COLOR_LIGHT_PURPLE, COLOR_MIDDLE_GREY } from "./common";
+import { useCommonStyles, dropDownPickerThemeProps, MenuOption } from "./common";
+import { ThemeColors, useThemeColors } from "./theme";
 import { WebRefList, WebRef, WebRefStorageObj } from "./WebRefList";
 import { MRXStorage } from "../MRXStorage";
 import { searchEngineCount, searchEngineIndex, searchEngineName, setSearchEngine } from "../parseBrowserUrl";
 
 
 
-const browserViewStyles=StyleSheet.create
-    ({
-    noTabsView:
-        {
-        flex: 1,
-        alignItems: "center",
-        margin: 0,
-        padding: 0,
-        border: 0
-        },
-    buttonBar:
-        {
-        height: 36,
-        backgroundColor: COLOR_LIGHT_PURPLE,
-        flexDirection: "row",
-        },
-    buttonView:
-        {
-        backgroundColor: COLOR_LIGHT_PURPLE,
-        flex: 2,
-        height: "100%",
-        alignItems: "center",
-        margin: 0,
-        padding: 0,
-        border: 0
-        },
-    halfButtonView:
-        {
-        backgroundColor: COLOR_LIGHT_PURPLE,
-        flex: 1,
-        height: "100%",
-        },
-    hilite:
-        {
-        backgroundColor: COLOR_LIGHT_PURPLE,
-        },
-    lolite:
-        {
-        backgroundColor: COLOR_WHITE,
-        },
-    itemRow:
-        {
-        flexDirection: "row",
-        },
-    itemColumn:
-        {
-        flexDirection: "column",
-        },
-    modalView:
-        {
-        flex: 1,
-        flexDirection: "column",
-        backgroundColor: "transparent",
-        justifyContent: "flex-end",
-        alignItems: "flex-end",
-        margin: 0,
-        padding: 0,
-        border: 0,
-        },
-    menuContainer:
-        {
-        position: 'absolute',
-        zIndex: 1000,
-        top: 0,
-        bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: "#00000080",
-        },
-    menu:
-        {
-        position: 'absolute',
-        zIndex: 1001,
-        backgroundColor: COLOR_WHITE,
-        bottom: 24,
-        right: 24,
-        },
-    });
+function buildBrowserViewStyles(colors : ThemeColors)
+    {
+    return StyleSheet.create
+        ({
+        noTabsView:
+            {
+            flex: 1,
+            alignItems: "center",
+            margin: 0,
+            padding: 0
+            },
+        buttonBar:
+            {
+            height: 36,
+            backgroundColor: colors.lightPurple,
+            flexDirection: "row",
+            },
+        buttonView:
+            {
+            backgroundColor: colors.lightPurple,
+            flex: 2,
+            height: "100%",
+            alignItems: "center",
+            margin: 0,
+            padding: 0
+            },
+        halfButtonView:
+            {
+            backgroundColor: colors.lightPurple,
+            flex: 1,
+            height: "100%",
+            },
+        hilite:
+            {
+            backgroundColor: colors.lightPurple,
+            },
+        lolite:
+            {
+            backgroundColor: colors.white,
+            },
+        itemRow:
+            {
+            flexDirection: "row",
+            },
+        itemColumn:
+            {
+            flexDirection: "column",
+            },
+        modalView:
+            {
+            flex: 1,
+            flexDirection: "column",
+            backgroundColor: "transparent",
+            justifyContent: "flex-end",
+            alignItems: "flex-end",
+            margin: 0,
+            padding: 0,
+            },
+        menuContainer:
+            {
+            position: 'absolute',
+            zIndex: 1000,
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: "#00000080",
+            },
+        menu:
+            {
+            position: 'absolute',
+            zIndex: 1001,
+            backgroundColor: colors.white,
+            bottom: 24,
+            right: 24,
+            },
+        });
+    }
 
 
 
@@ -147,13 +148,13 @@ export class WebHistoryList extends RNWebRefList
 
 class RNWebRef extends WebRef
     {
-    public render(wrList : WebRefList, index : number) : JSX.Element
+    public render(wrList : WebRefList, index : number, colors : ThemeColors, commonStyles : ReturnType<typeof useCommonStyles>, browserViewStyles : ReturnType<typeof buildBrowserViewStyles>) : JSX.Element
         {
         const when = new Date(this.so.epochMillis);
         const description = when.toLocaleDateString() + " " + when.toLocaleTimeString(undefined, { hour12: false }) + "   " + this.so.url;
         return (
             <View key={ index + 1 } style={ browserViewStyles.lolite }>
-                { renderListItem(this.so.title, description, () : void => wrList.selectPressed(this, index), () => wrList.deletePressed(this, index)) }
+                { renderListItem(this.so.title, description, () : void => wrList.selectPressed(this, index), () => wrList.deletePressed(this, index), colors, commonStyles, browserViewStyles) }
                 <View style={ commonStyles.horizontalBar }/>
             </View>
             );
@@ -162,18 +163,18 @@ class RNWebRef extends WebRef
 
 
 
-function renderListItem(title : string, description : string, onPress : () => any, onClose : () => any) : JSX.Element
+function renderListItem(title : string, description : string, onPress : () => any, onClose : () => any, colors : ThemeColors, commonStyles : ReturnType<typeof useCommonStyles>, browserViewStyles : ReturnType<typeof buildBrowserViewStyles>) : JSX.Element
     {
     return (
-        <TouchableRipple style={{ flex: 1 }} rippleColor={ COLOR_PURPLE_RIPPLE } onPress={ onPress }>
+        <TouchableRipple style={{ flex: 1 }} rippleColor={ colors.purpleRipple } onPress={ onPress }>
             <View>
                 <View style={ browserViewStyles.itemRow }>
                     <View style={{ flex: 1, paddingLeft: 12, paddingRight: 0, paddingTop: 9, paddingBottom: 9 }}>
-                        <Text numberOfLines={ 1 } ellipsizeMode="tail" style={{ color: COLOR_BLACK }}>{ title }</Text>
-                        <Text numberOfLines={ 1 } ellipsizeMode="tail" style={{ color: COLOR_MIDDLE_GREY }}>{ description }</Text>
+                        <Text numberOfLines={ 1 } ellipsizeMode="tail" style={{ color: colors.black }}>{ title }</Text>
+                        <Text numberOfLines={ 1 } ellipsizeMode="tail" style={{ color: colors.middleGrey }}>{ description }</Text>
                     </View>
                     <View style={ browserViewStyles.itemColumn }>
-                        <IconButton style={{ ...commonStyles.icon, zIndex: 1000 }} rippleColor={ COLOR_PURPLE_RIPPLE } size={ 24 } icon="close" onPress={ onClose }/>
+                        <IconButton style={{ ...commonStyles.icon, zIndex: 1000 }} rippleColor={ colors.purpleRipple } size={ 24 } icon="close" onPress={ onClose }/>
                         <View style={{ flex: 1 }}/>
                     </View>
                 </View>
@@ -200,6 +201,9 @@ export type BrowserViewProps =
 
 export default function BrowserView(props : BrowserViewProps) : JSX.Element
     {
+    const colors = useThemeColors();
+    const commonStyles = useCommonStyles();
+    const browserViewStyles = buildBrowserViewStyles(colors);
     const [ whatShowing, setWhatShowing ] = useState<Screen>(Screen.browser);
     const [ canGoForward, setCanGoForward ] = useState<boolean>(false);
     const [ canGoBack, setCanGoBack ] = useState<boolean>(false);
@@ -425,7 +429,7 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
             const tabContext : BrowserTabContextBase = param.item;
             return (
                 <View style={ tabContext.tabId == activeTabId() ? browserViewStyles.hilite : browserViewStyles.lolite }>
-                    { renderListItem(tabContext.currentTitle, tabContext.currentUrl, () : void => onTabListItemPressed(tabContext), () => onCloseTabListItemPressed(tabContext)) }
+                    { renderListItem(tabContext.currentTitle, tabContext.currentUrl, () : void => onTabListItemPressed(tabContext), () => onCloseTabListItemPressed(tabContext), colors, commonStyles, browserViewStyles) }
                     <View style={ commonStyles.horizontalBar }/>
                 </View>
                 );
@@ -468,7 +472,7 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
 
         function renderItem(param : ListRenderItemInfo<RNWebRef>) : JSX.Element
             {
-            return param.item.render(list, param.index);
+            return param.item.render(list, param.index, colors, commonStyles, browserViewStyles);
             }
 
         function getKey(wref : RNWebRef) : string
@@ -504,10 +508,9 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
                 { renderListHeader("Browser Settings") }
                 <View style={ { height: 24 } }/>
                 <View style={ commonStyles.squeezed }>
-                    <Text style={{ color: COLOR_MIDDLE_GREY}}>Default Search Engine:</Text>
+                    <Text style={{ color: colors.middleGrey}}>Default Search Engine:</Text>
                     <DropDownPicker
-                        dropDownContainerStyle={{ borderColor: COLOR_DARKISH_PURPLE }}
-                        style={{ borderColor: COLOR_DARKISH_PURPLE }}
+                        { ...(dropDownPickerThemeProps(colors) as any) }
                         maxHeight={ 300 }
                         flatListProps={{ initialNumToRender: searchEngineDDItems.length }}
                         items={ searchEngineDDItems }
@@ -527,11 +530,11 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
         return (
             <>
                 <View style={ commonStyles.topBar }>
-                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } size={ 24 } icon="menu" onPress={ onBurgerPressed }/>
+                    <IconButton style={ commonStyles.icon } rippleColor={ colors.purpleRipple } size={ 24 } icon="menu" onPress={ onBurgerPressed }/>
                     <View style={ commonStyles.titleContainingView }>
                         <Text style={ commonStyles.titleText }>{ title }</Text>
                     </View>
-                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } size={ 24 } icon="close" onPress={ resumeShowingBrowser }/>
+                    <IconButton style={ commonStyles.icon } rippleColor={ colors.purpleRipple } size={ 24 } icon="close" onPress={ resumeShowingBrowser }/>
                 </View>
                 <View style={ commonStyles.horizontalBar }/>
             </>
@@ -560,26 +563,26 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
         return (
             <View style={ browserViewStyles.buttonBar }>
                 <View style={ browserViewStyles.buttonView }>
-                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } iconColor={ COLOR_DARK_PURPLE } size={ 24 } icon="arrow-left" disabled={ !canGoBack } onPress={ onBackPressed }/>
+                    <IconButton style={ commonStyles.icon } rippleColor={ colors.purpleRipple } iconColor={ colors.darkPurple } size={ 24 } icon="arrow-left" disabled={ !canGoBack } onPress={ onBackPressed }/>
                 </View>
                 <View style={ browserViewStyles.buttonView }>
-                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } iconColor={ COLOR_DARK_PURPLE } size={ 24 } icon="refresh" disabled={ tabCount == 0 } onPress={ onLoadPressed }/>
+                    <IconButton style={ commonStyles.icon } rippleColor={ colors.purpleRipple } iconColor={ colors.darkPurple } size={ 24 } icon="refresh" disabled={ tabCount == 0 } onPress={ onLoadPressed }/>
                 </View>
                 <View style={ browserViewStyles.buttonView }>
-                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } iconColor={ COLOR_DARK_PURPLE } size={ 24 } icon="arrow-right" disabled={ !canGoForward } onPress={ onForwardPressed }/>
+                    <IconButton style={ commonStyles.icon } rippleColor={ colors.purpleRipple } iconColor={ colors.darkPurple } size={ 24 } icon="arrow-right" disabled={ !canGoForward } onPress={ onForwardPressed }/>
                 </View>
                 <View style={ browserViewStyles.halfButtonView }></View>
                 <View style={ browserViewStyles.buttonView }>
-                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } iconColor={ COLOR_DARK_PURPLE } size={ 24 } icon="tab-plus" onPress={ onNewTabPressed }/>
+                    <IconButton style={ commonStyles.icon } rippleColor={ colors.purpleRipple } iconColor={ colors.darkPurple } size={ 24 } icon="tab-plus" onPress={ onNewTabPressed }/>
                 </View>
                 <View style={ browserViewStyles.buttonView }>
-                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } iconColor={ COLOR_DARK_PURPLE } size={ 24 } icon="tab-remove" disabled={ tabCount == 0 } onPress={ onBottomBarCloseTabPressed }/>
+                    <IconButton style={ commonStyles.icon } rippleColor={ colors.purpleRipple } iconColor={ colors.darkPurple } size={ 24 } icon="tab-remove" disabled={ tabCount == 0 } onPress={ onBottomBarCloseTabPressed }/>
                 </View>
                 <View style={ browserViewStyles.buttonView }>
-                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } iconColor={ COLOR_DARK_PURPLE } size={ 24 } icon="tab" disabled={ tabCount == 0 } onPress={ onTabListPressed }/>
+                    <IconButton style={ commonStyles.icon } rippleColor={ colors.purpleRipple } iconColor={ colors.darkPurple } size={ 24 } icon="tab" disabled={ tabCount == 0 } onPress={ onTabListPressed }/>
                 </View>
                 <View style={ browserViewStyles.buttonView }>
-                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } iconColor={ COLOR_DARK_PURPLE } size={ 24 } icon="dots-horizontal" onPress={ openMenu }/>
+                    <IconButton style={ commonStyles.icon } rippleColor={ colors.purpleRipple } iconColor={ colors.darkPurple } size={ 24 } icon="dots-horizontal" onPress={ openMenu }/>
                 </View>
             </View>
             );
@@ -619,7 +622,7 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
                     { menuShowing ? renderMenu() : null }
                     <BrowserAllTabsView hide={ true } getApi={ getApi } onBurgerPressed={ onBurgerPressed } onNewCanGoState={ onNewCanGoState } onNewTabCount={ setTabCount } />
                     <View style={ commonStyles.topBar }>
-                        <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } size={ 24 } icon="menu" onPress={ onBurgerPressed }/>
+                        <IconButton style={ commonStyles.icon } rippleColor={ colors.purpleRipple } size={ 24 } icon="menu" onPress={ onBurgerPressed }/>
                     </View>
                     <View style={ commonStyles.horizontalBar }/>
                     <View style={{ flex: 1 }}/>
@@ -628,9 +631,9 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
                     </View>
                     <View style={{ flex: 1 }}/>
                     <View style={ commonStyles.titleContainingView }>
-                        <Text style={{ color: COLOR_BLACK }}>Use the</Text>
-                        <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } iconColor={ COLOR_DARK_PURPLE } size={ 24 } icon="tab-plus" onPress={ onNewTabPressed }/>
-                        <Text style={{ color: COLOR_BLACK }}>button to open a new tab.</Text>
+                        <Text style={{ color: colors.black }}>Use the</Text>
+                        <IconButton style={ commonStyles.icon } rippleColor={ colors.purpleRipple } iconColor={ colors.darkPurple } size={ 24 } icon="tab-plus" onPress={ onNewTabPressed }/>
+                        <Text style={{ color: colors.black }}>button to open a new tab.</Text>
                     </View>
                     <View style={{ flex: 1 }}/>
                     <BrowserBottom/>

@@ -213,7 +213,7 @@ export class WalletManager
 
     private loadWalletExtras() : void
         {
-        this.walletAddress = this.ownWallet!.keyPair.getAddress();
+        this.walletAddress = this.ownWallet!.address;
         this.walletRpcProvider = new WalletRPCProvider(this.ownWallet!);
         this.walletMweb3 = new Mweb3(this.walletRpcProvider);
         this.lastBalanceSat = BigInt(-1);

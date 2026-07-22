@@ -15,7 +15,8 @@ import { AcceptTokenView } from "./AcceptTokenView";
 import { SendView } from "./SendView";
 import { TransactionSentView } from "./TransactionSentView";
 import { QRAddressScanView, QR_SCANNER_TARGETS } from "./QRAddressScanView";
-import { COLOR_WHITE, handleHardwareBackPress, normalizeProps } from "./common";
+import { handleHardwareBackPress, normalizeProps } from "./common";
+import { ThemeColors, useThemeColors } from "./theme";
 import { ReceiveView } from "./ReceiveView";
 import { ExportAccountView } from "./ExportAccountView";
 import { AccountExportedView } from "./AccountExportedView";
@@ -27,15 +28,18 @@ import { ConfirmSendView } from "./ConfirmSendView";
 
 
 
-const walletStyles = StyleSheet.create
-    ({
-    screenHolder:
-        {
-        height: "100%",
-        width: "100%",
-        backgroundColor: COLOR_WHITE,
-        },
-    });
+function buildWalletStyles(colors : ThemeColors)
+    {
+    return StyleSheet.create
+        ({
+        screenHolder:
+            {
+            height: "100%",
+            width: "100%",
+            backgroundColor: colors.white,
+            },
+        });
+    }
 
 
 
@@ -200,6 +204,7 @@ export default function WalletView(props : WalletViewProps) : JSX.Element
         {
         walletNavigation = useNavigation<StackNavigationProp<any>>();
         useEffect(handleHardwareBackPress);
+        const walletStyles = buildWalletStyles(useThemeColors());
         return (
             <SafeAreaView>
                 <View style={ walletStyles.screenHolder }>
@@ -213,6 +218,7 @@ export default function WalletView(props : WalletViewProps) : JSX.Element
         {
         walletNavigation = useNavigation<StackNavigationProp<any>>();
         useEffect(handleHardwareBackPress);
+        const walletStyles = buildWalletStyles(useThemeColors());
         return (
             <SafeAreaView>
                 <View style={ walletStyles.screenHolder }>
@@ -226,6 +232,7 @@ export default function WalletView(props : WalletViewProps) : JSX.Element
         {
         walletNavigation = useNavigation<StackNavigationProp<any>>();
         useEffect(handleHardwareBackPress);
+        const walletStyles = buildWalletStyles(useThemeColors());
         return (
             <SafeAreaView>
                 <View style={ walletStyles.screenHolder }>
@@ -239,6 +246,7 @@ export default function WalletView(props : WalletViewProps) : JSX.Element
         {
         walletNavigation = useNavigation<StackNavigationProp<any>>();
         useEffect(handleHardwareBackPress);
+        const walletStyles = buildWalletStyles(useThemeColors());
         return (
             <SafeAreaView>
                 <View style={ walletStyles.screenHolder }>
@@ -252,6 +260,7 @@ export default function WalletView(props : WalletViewProps) : JSX.Element
         {
         walletNavigation = useNavigation<StackNavigationProp<any>>();
         useEffect(handleHardwareBackPress);
+        const walletStyles = buildWalletStyles(useThemeColors());
         return (
             <SafeAreaView>
                 <View style={ walletStyles.screenHolder }>
@@ -265,6 +274,7 @@ export default function WalletView(props : WalletViewProps) : JSX.Element
         {
         walletNavigation = useNavigation<StackNavigationProp<any>>();
         useEffect(handleHardwareBackPress);
+        const walletStyles = buildWalletStyles(useThemeColors());
         return (
             <SafeAreaView>
                 <View style={ walletStyles.screenHolder }>
@@ -278,6 +288,7 @@ export default function WalletView(props : WalletViewProps) : JSX.Element
         {
         walletNavigation = useNavigation<StackNavigationProp<any>>();
         useEffect(handleHardwareBackPress);
+        const walletStyles = buildWalletStyles(useThemeColors());
         return (
             <SafeAreaView>
                 <View style={ walletStyles.screenHolder }>
@@ -291,6 +302,7 @@ export default function WalletView(props : WalletViewProps) : JSX.Element
         {
         walletNavigation = useNavigation<StackNavigationProp<any>>();
         useEffect(handleHardwareBackPress);
+        const walletStyles = buildWalletStyles(useThemeColors());
         return (
             <SafeAreaView>
                 <View style={ walletStyles.screenHolder }>
@@ -304,6 +316,7 @@ export default function WalletView(props : WalletViewProps) : JSX.Element
         {
         walletNavigation = useNavigation<StackNavigationProp<any>>();
         useEffect(handleHardwareBackPress);
+        const walletStyles = buildWalletStyles(useThemeColors());
         return (
             <SafeAreaView>
                 <View style={ walletStyles.screenHolder }>
@@ -317,6 +330,7 @@ export default function WalletView(props : WalletViewProps) : JSX.Element
         {
         walletNavigation = useNavigation<StackNavigationProp<any>>();
         useEffect(handleHardwareBackPress);
+        const walletStyles = buildWalletStyles(useThemeColors());
         return (
             <SafeAreaView>
                 <View style={ walletStyles.screenHolder }>
@@ -330,6 +344,7 @@ export default function WalletView(props : WalletViewProps) : JSX.Element
         {
         walletNavigation = useNavigation<StackNavigationProp<any>>();
         useEffect(handleHardwareBackPress);
+        const walletStyles = buildWalletStyles(useThemeColors());
         return (
             <SafeAreaView>
                 <View style={ walletStyles.screenHolder }>
@@ -343,6 +358,7 @@ export default function WalletView(props : WalletViewProps) : JSX.Element
         {
         walletNavigation = useNavigation<StackNavigationProp<any>>();
         useEffect(handleHardwareBackPress);
+        const walletStyles = buildWalletStyles(useThemeColors());
         const onAddressScanned = onAddressScannedCopy;
         onAddressScannedCopy = null;
         return (
@@ -356,6 +372,7 @@ export default function WalletView(props : WalletViewProps) : JSX.Element
         {
         walletNavigation = useNavigation<StackNavigationProp<any>>();
         useEffect(handleHardwareBackPress);
+        const walletStyles = buildWalletStyles(useThemeColors());
         return (
             <SafeAreaView>
                 <View style={ walletStyles.screenHolder }>
@@ -369,6 +386,7 @@ export default function WalletView(props : WalletViewProps) : JSX.Element
         {
         walletNavigation = useNavigation<StackNavigationProp<any>>();
         useEffect(handleHardwareBackPress);
+        const walletStyles = buildWalletStyles(useThemeColors());
         return (
             <SafeAreaView>
                 <View style={ walletStyles.screenHolder }>
@@ -382,6 +400,7 @@ export default function WalletView(props : WalletViewProps) : JSX.Element
         {
         walletNavigation = useNavigation<StackNavigationProp<any>>();
         useEffect(handleHardwareBackPress);
+        const walletStyles = buildWalletStyles(useThemeColors());
         return (
             <SafeAreaView>
                 <View style={ walletStyles.screenHolder }>
@@ -395,6 +414,7 @@ export default function WalletView(props : WalletViewProps) : JSX.Element
         {
         walletNavigation = useNavigation<StackNavigationProp<any>>();
         useEffect(handleHardwareBackPress);
+        const walletStyles = buildWalletStyles(useThemeColors());
         return (
             <SafeAreaView>
                 <View style={ walletStyles.screenHolder }>
@@ -405,7 +425,7 @@ export default function WalletView(props : WalletViewProps) : JSX.Element
         }
 
     return (
-        <WalletNavigator.Navigator initialRouteName={ initialScreen } screenOptions={{ animationEnabled: false, gestureEnabled: false, headerShown: false }}>
+        <WalletNavigator.Navigator initialRouteName={ initialScreen } screenOptions={{ animation: 'none', gestureEnabled: false, headerShown: false }}>
             <WalletNavigator.Screen name={ WALLET_SCREENS.IMPORT_ACCOUNT   } component={ ImportAccountScreen   }/>
             <WalletNavigator.Screen name={ WALLET_SCREENS.CREATE_ACCOUNT   } component={ CreateAccountScreen   }/>
             <WalletNavigator.Screen name={ WALLET_SCREENS.ACCOUNT_CREATED  } component={ AccountCreatedScreen  }/>

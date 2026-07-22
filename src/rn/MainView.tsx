@@ -13,7 +13,8 @@ import UserInactivity, { UserInactivityAPI } from "react-native-user-inactivity"
 import { BIG_0, MC, MRX_DECIMALS, DEFAULT_INACTIVITY_TIMEOUT_MILLIS } from "../mc";
 import BrowserView from "./BrowserView";
 import WalletView, { WALLET_SCREENS, WalletViewAPI } from "./WalletView";
-import { commonStyles, handleHardwareBackPressNoExit, handleHardwareBackPress, formatSatoshi, BurgerlessTitleBar, MenuOption, COLOR_WHITE, COLOR_BLACK, COLOR_GREEN_WASH, COLOR_DARK_PURPLE } from "./common";
+import { useCommonStyles, buildCommonStyles, handleHardwareBackPressNoExit, handleHardwareBackPress, formatSatoshi, BurgerlessTitleBar, MenuOption } from "./common";
+import { ThemeProvider, ThemeColors, useThemeColors, useTheme } from "./theme";
 import { PermissionToSignView, PermissionToSignViewProps } from "./PermissionToSignView";
 import { PermissionToSendView, PermissionToSendViewProps } from "./PermissionToSendView";
 import { ContractCallParams } from "../WalletManager";
@@ -22,15 +23,18 @@ import { MRXStorage } from "../MRXStorage";
 
 
 
-const mainStyles = StyleSheet.create
-    ({
-    screenHolder:
-        {
-        height: "100%",
-        width: "100%",
-        backgroundColor: COLOR_WHITE,
-        },
-    });
+function buildMainStyles(colors : ThemeColors)
+    {
+    return StyleSheet.create
+        ({
+        screenHolder:
+            {
+            height: "100%",
+            width: "100%",
+            backgroundColor: colors.white,
+            },
+        });
+    }
 
 
 
@@ -223,6 +227,7 @@ export default function MainView() : JSX.Element
         {
         rootNavigation = useNavigation<StackNavigationProp<any>>();
         inWallet = false;
+        const mainStyles = buildMainStyles(useThemeColors());
         return (
             <SafeAreaView>
                 <View style={ mainStyles.screenHolder }>
@@ -249,6 +254,7 @@ export default function MainView() : JSX.Element
         {
         rootNavigation = useNavigation<StackNavigationProp<any>>();
         inWallet = false;
+        const mainStyles = buildMainStyles(useThemeColors());
         return (
             <SafeAreaView>
                 <View style={ mainStyles.screenHolder }>
@@ -276,6 +282,7 @@ export default function MainView() : JSX.Element
         {
         rootNavigation = useNavigation<StackNavigationProp<any>>();
         inWallet = false;
+        const mainStyles = buildMainStyles(useThemeColors());
         return (
             <SafeAreaView>
                 <View style={ mainStyles.screenHolder }>
@@ -298,6 +305,7 @@ export default function MainView() : JSX.Element
         {
         rootNavigation = useNavigation<StackNavigationProp<any>>();
         inWallet = false;
+        const colors = useThemeColors();
         useEffect(handleHardwareBackPress);
         const asyncWorkFunction = asyncWorkFunctionCopy;
         asyncWorkFunctionCopy = null;
@@ -317,13 +325,14 @@ export default function MainView() : JSX.Element
                     100);
                 }
             });
-        return renderWorkingScreen(whatWorksGoingOnCopy);
+        return renderWorkingScreen(whatWorksGoingOnCopy, colors);
         }
 
     function WalletWorkingScreen() : JSX.Element
         {
         rootNavigation = useNavigation<StackNavigationProp<any>>();
         inWallet = false;
+        const colors = useThemeColors();
         useEffect(handleHardwareBackPress);
         const workFunction = workFunctionCopy;
         workFunctionCopy = null;
@@ -340,11 +349,13 @@ export default function MainView() : JSX.Element
                     100);
                 }
             });
-        return renderWorkingScreen(whatWorksGoingOnCopy);
+        return renderWorkingScreen(whatWorksGoingOnCopy, colors);
         }
 
-    function renderWorkingScreen(whatWorksGoingOn : string) : JSX.Element
+    function renderWorkingScreen(whatWorksGoingOn : string, colors : ThemeColors) : JSX.Element
         {
+        const commonStyles = buildCommonStyles(colors);
+        const mainStyles = buildMainStyles(colors);
         return (
             <SafeAreaView>
                 <View style={ mainStyles.screenHolder }>
@@ -356,7 +367,7 @@ export default function MainView() : JSX.Element
                             <BurgerlessTitleBar title={ whatWorksGoingOn }/>
                             <View style={{ height: 48 }}/>
                             <View style={ commonStyles.squeezed }>
-                                <ProgressBar style={{ height: 12 }} indeterminate color={ COLOR_DARK_PURPLE }/>
+                                <ProgressBar style={{ height: 12 }} indeterminate color={ colors.darkPurple }/>
                             </View>
                         </View>
                         <View style={{ flex: 1 }}/>
@@ -370,6 +381,9 @@ export default function MainView() : JSX.Element
     function ShowEmergencyExit() : JSX.Element
         {
         rootNavigation = useNavigation<StackNavigationProp<any>>();
+        const colors = useThemeColors();
+        const commonStyles = useCommonStyles();
+        const mainStyles = buildMainStyles(colors);
         useEffect(handleHardwareBackPressNoExit);
         if (emergencyExitMsgs.length == 0) emergencyExitMsgs.push("No information available.");
 
@@ -377,7 +391,7 @@ export default function MainView() : JSX.Element
             {
             let i : number = 1;
             let elems : JSX.Element[] = Array(emergencyExitMsgs.length);
-            for (const msg of emergencyExitMsgs) elems.push(<Text key={ "N" + i++ } style={{ color: COLOR_BLACK }}>{ msg }</Text>);
+            for (const msg of emergencyExitMsgs) elems.push(<Text key={ "N" + i++ } style={{ color: colors.black }}>{ msg }</Text>);
             return elems;
             }
 
@@ -388,11 +402,11 @@ export default function MainView() : JSX.Element
                     <View style={ commonStyles.horizontalBar }/>
                     <View style={ commonStyles.squeezed }>
                         <View style={{ height: 24 }}/>
-                        <Text style={{ color: COLOR_BLACK }}>Something has gone wrong, and the app is no longer able to continue. (Sometimes the problem is no internet connection).</Text>
+                        <Text style={{ color: colors.black }}>Something has gone wrong, and the app is no longer able to continue. (Sometimes the problem is no internet connection).</Text>
                         <View style={{ height: 6 }}/>
-                        <Text style={{ color: COLOR_BLACK }}>We apologize for the inconvenience. The following information is available about what went wrong:</Text>
+                        <Text style={{ color: colors.black }}>We apologize for the inconvenience. The following information is available about what went wrong:</Text>
                         <View style={{ height: 24 }}/>
-                        <View style={{ backgroundColor: COLOR_GREEN_WASH, padding: 6 }}>
+                        <View style={{ backgroundColor: colors.greenWash, padding: 6 }}>
                             { renderMessages() }
                         </View>
                     </View>
@@ -404,6 +418,8 @@ export default function MainView() : JSX.Element
     function ShowStarting() : JSX.Element
         {
         rootNavigation = useNavigation<StackNavigationProp<any>>();
+        const colors = useThemeColors();
+        const theme = useTheme();
         useEffect(handleHardwareBackPressNoExit);
         inWallet = false;
 
@@ -420,6 +436,7 @@ export default function MainView() : JSX.Element
 
             MC.doAllInitialization().then(() =>
                 {
+                theme.setDarkMode(MC.getMC().storage.darkMode);
                 MC.getMC().setMainViewAPI(
                     {
                     goToBrowser: goToBrowser,
@@ -458,19 +475,28 @@ export default function MainView() : JSX.Element
         useEffect(() : void =>
             {
             setTimeout(startupSequence, 100);
-            });
+            }, [ ]);
 
-        return renderWorkingScreen("Starting ...");
+        return renderWorkingScreen("Starting ...", colors);
         }
 
     function DrawerContent(props : DrawerContentProps) : JSX.Element
         {
+        const colors = useThemeColors();
+        const commonStyles = useCommonStyles();
         const mc : MC = MC.getMC();
         const isLoggedIn = mc && mc.storage.accountManager.isLoggedIn;
 
         function navigate(screen : string) : void
             {
             if (!isInitializing) props.navigation.navigate(screen);
+            props.navigation.closeDrawer();
+            }
+
+        function walletNavigateAndCloseDrawer(screen : WALLET_SCREENS) : void
+            {
+            walletNavigate(screen);
+            props.navigation.closeDrawer();
             }
 
         function renderBalance(am : AccountManager) : JSX.Element | null
@@ -481,7 +507,7 @@ export default function MainView() : JSX.Element
                     <>
                         <View style={ commonStyles.rowContainer }>
                             <View style={{ flex: 1 }}/>
-                            <Text style={{ color: COLOR_BLACK }}>{ text }</Text>
+                            <Text style={{ color: colors.black }}>{ text }</Text>
                             <View style={{ flex: 1 }}/>
                         </View>
                     </>
@@ -514,28 +540,28 @@ export default function MainView() : JSX.Element
             {
             const am = mc.storage.accountManager;
             return (
-                <DrawerContentScrollView { ...props }>
+                <DrawerContentScrollView { ...props } style={{ backgroundColor: colors.white }}>
                     <BurgerlessTitleBar title="MetriMask"/>
                     <View style={ commonStyles.horizontalBar }/>
                     <View style={{ height: 12 }}/>
                     <View style={ commonStyles.rowContainer }>
                         <View style={{ flex: 1 }}/>
-                        <Text style={{ color: COLOR_BLACK }}>{ am.current.accountName + " on " + am.current.wm.ninfo.name }</Text>
+                        <Text style={{ color: colors.black }}>{ am.current.accountName + " on " + am.current.wm.ninfo.name }</Text>
                         <View style={{ flex: 1 }}/>
                     </View>
                     { renderBalance(am) }
                     <View style={{ height: 12 }}/>
                     <View style={ commonStyles.horizontalBar }/>
                     <View style={{ height: 18 }}/>
-                    <MenuOption label="Browser"         icon="web"                 onPress={ () : void => navigate(ROOT_SCREENS.BROWSER)                }/>
-                    <MenuOption label="Account Home"    icon="account"             onPress={ () : void => walletNavigate(WALLET_SCREENS.ACCOUNT_HOME)   }/>
-                    <MenuOption label="Send"            icon="debug-step-out"      onPress={ () : void => walletNavigate(WALLET_SCREENS.SEND)           }/>
-                    <MenuOption label="Receive"         icon="debug-step-into"     onPress={ () : void => walletNavigate(WALLET_SCREENS.RECEIVE)        }/>
-                    <MenuOption label="Add MRC20 Token" icon="cash-plus"           onPress={ () : void => walletNavigate(WALLET_SCREENS.ADD_TOKEN)      }/>
-                    <MenuOption label="Add Account"     icon="account-plus"        onPress={ () : void => walletNavigate(WALLET_SCREENS.CREATE_ACCOUNT) }/>
-                    <MenuOption label="Export Account"  icon="account-arrow-right" onPress={ () : void => walletNavigate(WALLET_SCREENS.EXPORT_ACCOUNT) }/>
-                    <MenuOption label="Settings"        icon="cog-outline"         onPress={ () : void => walletNavigate(WALLET_SCREENS.SETTINGS)       }/>
-                    <MenuOption label="Lock Wallet"     icon="lock"                onPress={ askThenLogout                                              }/>
+                    <MenuOption label="Browser"         icon="web"                 onPress={ () : void => navigate(ROOT_SCREENS.BROWSER)                             }/>
+                    <MenuOption label="Account Home"    icon="account"             onPress={ () : void => walletNavigateAndCloseDrawer(WALLET_SCREENS.ACCOUNT_HOME)   }/>
+                    <MenuOption label="Send"            icon="debug-step-out"      onPress={ () : void => walletNavigateAndCloseDrawer(WALLET_SCREENS.SEND)           }/>
+                    <MenuOption label="Receive"         icon="debug-step-into"     onPress={ () : void => walletNavigateAndCloseDrawer(WALLET_SCREENS.RECEIVE)        }/>
+                    <MenuOption label="Add MRC20 Token" icon="cash-plus"           onPress={ () : void => walletNavigateAndCloseDrawer(WALLET_SCREENS.ADD_TOKEN)      }/>
+                    <MenuOption label="Add Account"     icon="account-plus"        onPress={ () : void => walletNavigateAndCloseDrawer(WALLET_SCREENS.CREATE_ACCOUNT) }/>
+                    <MenuOption label="Export Account"  icon="account-arrow-right" onPress={ () : void => walletNavigateAndCloseDrawer(WALLET_SCREENS.EXPORT_ACCOUNT) }/>
+                    <MenuOption label="Settings"        icon="cog-outline"         onPress={ () : void => walletNavigateAndCloseDrawer(WALLET_SCREENS.SETTINGS)       }/>
+                    <MenuOption label="Lock Wallet"     icon="lock"                onPress={ askThenLogout                                                           }/>
                 </DrawerContentScrollView>
                 );
             }
@@ -545,7 +571,7 @@ export default function MainView() : JSX.Element
             const unlockLabel = canLogin ? "Unlock Wallet" : "Add Account";
             const unlockIcon = canLogin ? "lock-open-variant" : "account-plus";
             return (
-                <DrawerContentScrollView { ...props }>
+                <DrawerContentScrollView { ...props } style={{ backgroundColor: colors.white }}>
                     <BurgerlessTitleBar title="MetriMask"/>
                     <View style={ commonStyles.horizontalBar }/>
                     <View style={{ height: 18 }}/>
@@ -561,8 +587,8 @@ export default function MainView() : JSX.Element
         return (
             <NavigationContainer>
                 <RootDrawerNavigator.Navigator initialRouteName={ ROOT_SCREENS.STARTING } drawerContent={ DrawerContent } backBehavior="none" screenOptions={{ headerShown: false }}>
-                    <RootDrawerNavigator.Screen name={ ROOT_SCREENS.BROWSER            } component={ BrowserScreen            }                                  />
-                    <RootDrawerNavigator.Screen name={ ROOT_SCREENS.WALLET             } component={ WalletScreen             }                                  />
+                    <RootDrawerNavigator.Screen name={ ROOT_SCREENS.BROWSER            } component={ BrowserScreen            } options={{ swipeEnabled: false }}/>
+                    <RootDrawerNavigator.Screen name={ ROOT_SCREENS.WALLET             } component={ WalletScreen             } options={{ swipeEnabled: false }}/>
                     <RootDrawerNavigator.Screen name={ ROOT_SCREENS.PERMISSION_TO_SIGN } component={ PermissionToSignScreen   } options={{ swipeEnabled: false }}/>
                     <RootDrawerNavigator.Screen name={ ROOT_SCREENS.PERMISSION_TO_SEND } component={ PermissionToSendScreen   } options={{ swipeEnabled: false }}/>
                     <RootDrawerNavigator.Screen name={ ROOT_SCREENS.STARTING           } component={ ShowStarting             } options={{ swipeEnabled: false }}/>
@@ -575,10 +601,12 @@ export default function MainView() : JSX.Element
         }
 
     return (
-        <SafeAreaProvider>
-            <UserInactivity isActive={ userActive } timeForInactivity={ inactivityTimeoutMillis } timeoutHandler={ TIMEOUT_HANDLER } getAPI={ getInactivityAPI } onAction={ onInactivityAction }>
-                <ShowMainView />
-            </UserInactivity>
-        </SafeAreaProvider>
+        <ThemeProvider initialDarkMode={ false }>
+            <SafeAreaProvider>
+                <UserInactivity isActive={ userActive } timeForInactivity={ inactivityTimeoutMillis } timeoutHandler={ TIMEOUT_HANDLER } getAPI={ getInactivityAPI } onAction={ onInactivityAction }>
+                    <ShowMainView />
+                </UserInactivity>
+            </SafeAreaProvider>
+        </ThemeProvider>
         );
     }

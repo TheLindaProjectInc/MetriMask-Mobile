@@ -1,15 +1,16 @@
 import "../../shimWrapper.js";
 
 import React, { useState, useEffect } from "react";
-import { StyleSheet, Text, View, useWindowDimensions, FlatList, ListRenderItemInfo } from "react-native";
+import { StyleSheet, Text, View, useWindowDimensions, FlatList, ListRenderItemInfo, Modal, TouchableWithoutFeedback } from "react-native";
 import { IconButton, TouchableRipple, ProgressBar } from "react-native-paper";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from "@react-navigation/stack";
 import DropDownPicker, { ItemType, ValueType} from 'react-native-dropdown-picker';
 import { TabView, TabBar, SceneMap, SceneRendererProps, NavigationState, } from 'react-native-tab-view';
-import { Scene } from "react-native-tab-view/lib/typescript/src/types.js";
 
-import { commonStyles, formatSatoshi, TitleBar, SimpleDoublet, LOADING_STR, NO_INFO_STR, DoubleDoublet, SimpleButton, SimpleButtonPair, AddressQuasiDoublet, COLOR_BLACK, COLOR_DARKISH_PURPLE, COLOR_DARK_PURPLE, COLOR_LIGHT_GREY, COLOR_WHITE, COLOR_PURPLE_RIPPLE, COLOR_LIGHTISH_PURPLE, COLOR_MIDDLE_GREY, COLOR_RED } from "./common";
+import { useCommonStyles, dropDownPickerThemeProps, formatSatoshi, TitleBar, SimpleDoublet, LOADING_STR, NO_INFO_STR, DoubleDoublet, SimpleButton, SimpleButtonPair, AddressQuasiDoublet } from "./common";
+import { ThemeColors, useThemeColors } from "./theme";
 import { BIG_0, MC, MRX_DECIMALS } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
 import { WorkFunctionResult } from "./MainView";
@@ -20,24 +21,39 @@ import { NET_ID } from "../NetInfo";
 
 
 
-const accountHomeStyles = StyleSheet.create
-    ({
-    containingView:
-        {
-        flexDirection: "column",
-        backgroundColor: COLOR_WHITE,
-        margin: 0,
-        padding: 0,
-        border: 0,
-        },
-    icon:
-        {
-        margin: 0,
-        padding: 0,
-        border: 0,
-        alignSelf: "center"    
-        }
-    });
+function buildAccountHomeStyles(colors : ThemeColors)
+    {
+    return StyleSheet.create
+        ({
+        containingView:
+            {
+            flexDirection: "column",
+            backgroundColor: colors.white,
+            margin: 0,
+            padding: 0,
+            },
+        icon:
+            {
+            margin: 0,
+            padding: 0,
+            alignSelf: "center"
+            },
+        dialogOverlay:
+            {
+            flex: 1,
+            backgroundColor: "#00000080",
+            alignItems: "center",
+            justifyContent: "center",
+            },
+        dialogCard:
+            {
+            width: "85%",
+            backgroundColor: colors.white,
+            borderRadius: 6,
+            padding: 24,
+            },
+        });
+    }
 
 
 
@@ -84,6 +100,9 @@ let nonce : number = 1;
 export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
     {
     const walletNavigation = useNavigation<StackNavigationProp<any>>();
+    const colors = useThemeColors();
+    const commonStyles = useCommonStyles();
+    const accountHomeStyles = buildAccountHomeStyles(colors);
     const mc = MC.getMC();
     const am = mc.storage.accountManager;
     let sceneMapObj : any = { };
@@ -103,6 +122,7 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
     const [ txLogTickler, setTxLogTickler ] = useState<boolean>(false);
     const [ tokenTickler, setTokenTickler ] = useState<boolean>(false);
     const [ txLoadInProgress, setTxLoadInProgress ] = useState<boolean>(false);
+    const [ selectedTx, setSelectedTx ] = useState<TransactionInfo | null>(null);
 
     const layout = useWindowDimensions();
     if (disableMoreTxs != txLoadInProgress) setDisableMoreTxs(txLoadInProgress);
@@ -224,8 +244,19 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
         setTokenTickler(!tokenTickler);
         }
 
-    function onShowTx(ti : TransactionInfo) : void
+    function onSelectTx(ti : TransactionInfo) : void
         {
+        setSelectedTx(ti);
+        }
+
+    function onDismissTxDialog() : void
+        {
+        setSelectedTx(null);
+        }
+
+    function onOpenExplorer(ti : TransactionInfo) : void
+        {
+        setSelectedTx(null);
         mc.openUrlInNewTab(am.current.wm.ninfo.toTxUrl(ti.id));
         }
 
@@ -276,7 +307,7 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
             {
             const ti : TransactionInfo = param.item;
             const isNegative : boolean = ti.valueSat < BIG_0;
-            const valueColor : string = isNegative ? COLOR_RED : COLOR_BLACK;
+            const valueColor : string = isNegative ? colors.red : colors.black;
 
             function renderUSD() : JSX.Element | null
                 {
@@ -289,16 +320,19 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
         
             function renderTxLogEntry(ti : TransactionInfo) : JSX.Element
                 {
+                const directionIcon  : string = isNegative ? "arrow-up-bold" : "arrow-down-bold";
+                const directionColor : string = isNegative ? colors.red : colors.dullGreen;
                 return (
-                    <TouchableRipple rippleColor={ COLOR_PURPLE_RIPPLE } onPress={ () : void => onShowTx(ti) }>
+                    <TouchableRipple rippleColor={ colors.purpleRipple } onPress={ () : void => onSelectTx(ti) }>
                         <View style={{ width: "100%", paddingLeft: 24, paddingRight: 24, paddingTop: 9, paddingBottom: 9 }}>
                             <View style={ commonStyles.rowContainer }>
+                                <MaterialCommunityIcons name={ directionIcon } color={ directionColor } size={ 16 } style={{ alignSelf: "center", marginRight: 6 }}/>
                                 <Text style={{ color: valueColor }}>{ formatSatoshi(ti.valueSat, MRX_DECIMALS) }</Text>
                                 { renderUSD() }
                                 <View style={{ flex: 1 }}/>
-                                <Text style={{ color: COLOR_BLACK }}>{ ti.dateTimeStr }</Text>
+                                <Text style={{ color: colors.black }}>{ ti.dateTimeStr }</Text>
                             </View>
-                            <Text style={{ color: COLOR_MIDDLE_GREY }} numberOfLines={ 1 } ellipsizeMode="middle">{ ti.id }</Text>
+                            <Text style={{ color: colors.middleGrey }} numberOfLines={ 1 } ellipsizeMode="middle">{ ti.id }</Text>
                         </View>
                     </TouchableRipple>
                     );
@@ -308,7 +342,7 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
                 return (
                     <>
                         { renderTxLogEntry(ti) }
-                        <View style={{ height: 3, backgroundColor: COLOR_LIGHT_GREY }}/>
+                        <View style={{ height: 3, backgroundColor: colors.lightGrey }}/>
                         <View style={{ height: 24 }}/>
                         <View style={ commonStyles.squeezed }>
                             <SimpleButton text="Load More Transactions" disabled={ disableMoreTxs } onPress = { onLoadMoreTxs }/>
@@ -320,7 +354,7 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
                 return (
                     <>
                         { renderTxLogEntry(ti) }
-                        <View style={{ height: 3, backgroundColor: COLOR_LIGHT_GREY }}/>
+                        <View style={{ height: 3, backgroundColor: colors.lightGrey }}/>
                     </>
                     );
             }
@@ -338,20 +372,20 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
             const name = mrc20.name.length ? mrc20.name : mrc20.address;
             const balance = mrc20.infoIsValid ? formatSatoshi(mrc20.balanceSat, mrc20.decimals) + " " + mrc20.symbol : NO_INFO_STR;
             return (
-                <TouchableRipple style={{ flex: 1 }} rippleColor={ COLOR_PURPLE_RIPPLE } onPress={ () : void => onShowToken(mrc20) }>
+                <TouchableRipple style={{ flex: 1 }} rippleColor={ colors.purpleRipple } onPress={ () : void => onShowToken(mrc20) }>
                     <View>
                         <View style={ commonStyles.rowContainer }>
                             <View style={{ paddingLeft: 24, paddingRight: 0, paddingTop: 9, paddingBottom: 9 }}>
-                                <Text style={{ color: COLOR_BLACK }}>{ name }</Text>
-                                <Text style={{ color: COLOR_MIDDLE_GREY }}>{ balance }</Text>
+                                <Text style={{ color: colors.black }}>{ name }</Text>
+                                <Text style={{ color: colors.middleGrey }}>{ balance }</Text>
                             </View>
                             <View style={{ flex: 1 }}/>
                             <View style={ accountHomeStyles.containingView }>
-                                <IconButton rippleColor={ COLOR_PURPLE_RIPPLE } style={ commonStyles.icon } size={ 24 } icon="close" onPress={ () : void => onRemoveToken(mrc20) }/>
+                                <IconButton rippleColor={ colors.purpleRipple } style={ commonStyles.icon } size={ 24 } icon="close" onPress={ () : void => onRemoveToken(mrc20) }/>
                                 <View style={{ flex: 1 }}/>
                             </View>
                         </View>
-                        <View style={{ height: 3, backgroundColor: COLOR_LIGHT_GREY }}/>
+                        <View style={{ height: 3, backgroundColor: colors.lightGrey }}/>
                     </View>
                 </TouchableRipple>
                 );
@@ -364,24 +398,13 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
 
     function renderTabBar(props : SceneRendererProps & { navigationState : NavigationState<TabRoute>; }) : JSX.Element
         {
-        function renderLabel(scene : Scene<TabRoute> & { focused : boolean; color : string; }) : JSX.Element
-            {
-            if (scene.focused)
-                return (
-                    <Text style={{ color: COLOR_BLACK, margin: 0 }}>{ scene.route.title }</Text>
-                    );
-            else
-                return (
-                    <Text style={{ color: COLOR_MIDDLE_GREY, margin: 0 }}>{ scene.route.title }</Text>
-                    );
-            }
-
         return (
             <TabBar
                 { ...props }
-                renderLabel={ renderLabel }
-                indicatorStyle={{ backgroundColor: COLOR_DARK_PURPLE }}
-                style={{ backgroundColor: COLOR_LIGHTISH_PURPLE }}
+                activeColor={ colors.black }
+                inactiveColor={ colors.middleGrey }
+                indicatorStyle={{ backgroundColor: colors.darkPurple }}
+                style={{ backgroundColor: colors.lightishPurple }}
                 />
             );
         }
@@ -389,17 +412,57 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
     function DividerBar() : JSX.Element
         {
         if (disableMoreTxs)
-            return (<ProgressBar style={{ height: 3 }} indeterminate color={ COLOR_DARK_PURPLE } />);
+            return (<ProgressBar style={{ height: 3 }} indeterminate color={ colors.darkPurple } />);
         else
-            return (<ProgressBar style={{ height: 3 }} progress={ 1 } color={ COLOR_DARK_PURPLE } />);
+            return (<ProgressBar style={{ height: 3 }} progress={ 1 } color={ colors.darkPurple } />);
         }
 
     function renderBalanceUSD() : JSX.Element | null
         {
         if (balanceUSD)
-            return (<Text style={{ color: COLOR_BLACK }}>{ "$ " + balanceUSD }</Text>);
+            return (<Text style={{ color: colors.black }}>{ "$ " + balanceUSD }</Text>);
         else
             return null;
+        }
+
+    function renderTxDetailsDialog() : JSX.Element | null
+        {
+        if (!selectedTx) return null;
+        const ti : TransactionInfo = selectedTx;
+        const isNegative     : boolean = ti.valueSat < BIG_0;
+        const directionText  : string  = isNegative ? "Sent" : "Received";
+        const directionColor : string  = isNegative ? colors.red : colors.dullGreen;
+        const directionIcon  : string  = isNegative ? "arrow-up-bold" : "arrow-down-bold";
+
+        return (
+            <Modal visible={ true } transparent={ true } animationType="fade" onRequestClose={ onDismissTxDialog }>
+                <TouchableWithoutFeedback onPress={ onDismissTxDialog }>
+                    <View style={ accountHomeStyles.dialogOverlay }>
+                        <TouchableWithoutFeedback onPress={ () : void => { } }>
+                            <View style={ accountHomeStyles.dialogCard }>
+                                <View style={ commonStyles.rowContainer }>
+                                    <MaterialCommunityIcons name={ directionIcon } color={ directionColor } size={ 20 } style={{ alignSelf: "center", marginRight: 6 }}/>
+                                    <Text style={{ color: directionColor, fontWeight: "bold", alignSelf: "center" }}>{ directionText }</Text>
+                                </View>
+                                <View style={{ height: 16 }}/>
+                                <SimpleDoublet title="Amount:" text={ formatSatoshi(ti.valueSat, MRX_DECIMALS) + " MRX" }/>
+                                <View style={{ height: 12 }}/>
+                                <SimpleDoublet title="Date:" text={ ti.dateTimeStr }/>
+                                <View style={{ height: 12 }}/>
+                                <SimpleDoublet title="Confirmations:" text={ ti.confirmations.toString() }/>
+                                <View style={{ height: 12 }}/>
+                                <Text style={{ color: colors.middleGrey }}>Transaction Hash:</Text>
+                                <TouchableRipple rippleColor={ colors.purpleRipple } onPress={ () : void => onOpenExplorer(ti) }>
+                                    <Text style={{ color: colors.darkPurple, textDecorationLine: "underline" }} numberOfLines={ 1 } ellipsizeMode="middle">{ ti.id }</Text>
+                                </TouchableRipple>
+                                <View style={{ height: 24 }}/>
+                                <SimpleButton text="Close" onPress={ onDismissTxDialog }/>
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </View>
+                </TouchableWithoutFeedback>
+            </Modal>
+            );
         }
 
     return (
@@ -408,10 +471,9 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
             <View style={ commonStyles.horizontalBar }/>
             <View style={{ height: 20 }} />
             <View style={ commonStyles.squeezed }>
-                <Text style={{ color: COLOR_MIDDLE_GREY}}>Account:</Text>
+                <Text style={{ color: colors.middleGrey}}>Account:</Text>
                 <DropDownPicker
-                    dropDownContainerStyle={{ borderColor: COLOR_DARKISH_PURPLE }}
-                    style={{ borderColor: COLOR_DARKISH_PURPLE }}
+                    { ...(dropDownPickerThemeProps(colors) as any) }
                     maxHeight={ 200 }
                     items={ accountDDItems }
                     open={ accountDDOpen }
@@ -434,6 +496,7 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
             </View>
             <DividerBar/>
             <TabView navigationState={{ index: tabIndex, routes: tabRoutes }} renderScene={ tabSceneMap } onIndexChange={ setTabIndex } initialLayout={{ width: layout.width }} renderTabBar={ renderTabBar }/>
+            { renderTxDetailsDialog() }
         </View>
         );
     }

@@ -6,34 +6,38 @@ import Clipboard from "@react-native-clipboard/clipboard";
 
 import { MC } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
-import { AddressQuasiDoublet, COLOR_BLACK, COLOR_GREEN_WASH, commonStyles, DoubleDoublet, SimpleButton, TitleBar } from "./common";
+import { AddressQuasiDoublet, useCommonStyles, DoubleDoublet, SimpleButton, TitleBar } from "./common";
+import { ThemeColors, useThemeColors } from "./theme";
 
 
 
-const accountExportedStyles = StyleSheet.create
-    ({
-    wif:
-        {
-        marginLeft: 0,
-        marginRight: 0,
-        padding: 12,
-        backgroundColor: COLOR_GREEN_WASH,
-        },
-    wifTextAndroid:
-        {
-        fontFamily: "monospace",
-        fontSize: 20,
-        fontWeight: "bold",
-        color: COLOR_BLACK,
-        },
-    wifTextIos:
-        {
-        fontFamily: "Courier",
-        fontSize: 20,
-        fontWeight: "bold",
-        color: COLOR_BLACK,
-        },
-    });
+function buildAccountExportedStyles(colors : ThemeColors)
+    {
+    return StyleSheet.create
+        ({
+        wif:
+            {
+            marginLeft: 0,
+            marginRight: 0,
+            padding: 12,
+            backgroundColor: colors.greenWash,
+            },
+        wifTextAndroid:
+            {
+            fontFamily: "monospace",
+            fontSize: 20,
+            fontWeight: "bold",
+            color: colors.black,
+            },
+        wifTextIos:
+            {
+            fontFamily: "Courier",
+            fontSize: 20,
+            fontWeight: "bold",
+            color: colors.black,
+            },
+        });
+    }
 
 
 
@@ -44,6 +48,9 @@ type AccountExportedViewProps =
 
 export function AccountExportedView(props : AccountExportedViewProps) : JSX.Element
     {
+    const colors = useThemeColors();
+    const commonStyles = useCommonStyles();
+    const accountExportedStyles = buildAccountExportedStyles(colors);
     const walletNavigation = useNavigation<StackNavigationProp<any>>();
     const am = MC.getMC().storage.accountManager;
     const wif = am.current.wm.wallet.toWIF();
@@ -59,7 +66,7 @@ export function AccountExportedView(props : AccountExportedViewProps) : JSX.Elem
                 <View style={{ height: 7 }}/>
                 <AddressQuasiDoublet title="Address:" acnt={ am.current }/>
                 <View style={{ height: 16 }}/>
-                <Text>WIF:</Text>
+                <Text style={{ color: colors.black }}>WIF:</Text>
                 <View style={ accountExportedStyles.wif }>
                     <Text style={ fontStyle }>{ wif }</Text>
                 </View>

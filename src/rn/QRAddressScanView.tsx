@@ -1,13 +1,13 @@
-import React, { useState } from "react";
-import { Platform, ScrollView, Text, View } from "react-native";
-import QRCodeScanner from 'react-native-qrcode-scanner';
-import { RNCamera, BarCodeReadEvent } from 'react-native-camera';
-import { Button as PaperButton, IconButton } from "react-native-paper";
+import React, { useEffect, useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
+import { Camera, useCameraDevice, useCameraPermission, useCodeScanner } from 'react-native-vision-camera';
+import { IconButton, TouchableRipple } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 
 import { MC } from "../mc";
-import { COLOR_DULL_GREEN, COLOR_GREEN, COLOR_WHITE, commonStyles, InvalidMessage, SimpleButtonPair, TitleBar } from "./common";
+import { useCommonStyles, InvalidMessage, SimpleButtonPair, TitleBar } from "./common";
+import { useThemeColors } from "./theme";
 import { WALLET_SCREENS } from "./WalletView";
 
 
@@ -45,12 +45,22 @@ export type QRAddressScanViewProps = QRAddressScanViewSerializableProps &
 export function QRAddressScanView(props : QRAddressScanViewProps) : JSX.Element
     {
     const walletNavigation = useNavigation<StackNavigationProp<any>>();
-    const [ flashMode, setFlashMode ] = useState<any>(RNCamera.Constants.FlashMode.auto);
+    const colors = useThemeColors();
+    const commonStyles = useCommonStyles();
+    const [ torchOn, setTorchOn ] = useState<boolean>(false);
     const [ errorMessage, setErrorMessage ] = useState<string>("");
+    const device = useCameraDevice('back');
+    const { hasPermission, requestPermission } = useCameraPermission();
 
-    function onRead(evt : BarCodeReadEvent) : void
+    useEffect(() =>
         {
-        const addr : string = massageAddress(evt.data);
+        if (!hasPermission) requestPermission();
+        },
+        [ hasPermission ]);
+
+    function onRead(data : string) : void
+        {
+        const addr : string = massageAddress(data);
         if (addr.length)
             {
             props.onAddressScanned(addr);
@@ -59,6 +69,16 @@ export function QRAddressScanView(props : QRAddressScanViewProps) : JSX.Element
         else
             setErrorMessage(TARGET_ERRORS[props.target]);
         }
+
+    const codeScanner = useCodeScanner(
+        {
+        codeTypes: [ 'qr' ],
+        onCodeScanned: (codes) =>
+            {
+            const value : string | undefined = codes[0]?.value;
+            if (value) onRead(value);
+            }
+        });
 
     function massageAddress(addr : string) : string
         {
@@ -103,30 +123,29 @@ export function QRAddressScanView(props : QRAddressScanViewProps) : JSX.Element
 
     function renderScannerFooter() : JSX.Element
         {
-        function renderFlashButton(buttonFlashMode : any, iconName : string) : JSX.Element
+        function renderTorchButton(buttonTorchOn : boolean, iconName : string) : JSX.Element
             {
-            const onPress = () : void => { if (flashMode != buttonFlashMode) setFlashMode(buttonFlashMode); };
-            const color : string = flashMode == buttonFlashMode ? COLOR_GREEN : COLOR_DULL_GREEN;
+            const onPress = () : void => { if (torchOn != buttonTorchOn) setTorchOn(buttonTorchOn); };
+            const color : string = torchOn == buttonTorchOn ? colors.green : colors.dullGreen;
             return (<IconButton style={ commonStyles.icon } iconColor={ color } size={ 24 } icon={ iconName } onPress={ onPress }/>);
             }
 
-        const footerStyle : object = Platform.OS == "ios"
-            ? { ...commonStyles.rowContainer, paddingBottom: 24, paddingTop: 24, backgroundColor: "#000000" }
-            : { ...commonStyles.rowContainer, marginBottom: 24 };
         return (
-            <View style={ footerStyle }>
+            <View style={{ ...commonStyles.rowContainer, marginBottom: 24 }}>
                 <View style={{ width: 24 }}/>
-                <PaperButton onPress={ onCancel } style={{ borderColor: COLOR_GREEN, borderWidth: 1 }} mode="outlined" uppercase={ false } color={ COLOR_GREEN }>
-                    <Text style={{ color: COLOR_GREEN }}>Cancel</Text>
-                </PaperButton>
+                {/* Built from primitives rather than react-native-paper's Button: see the note on
+                    SimpleButton in common.tsx for why (Surface/elevation border-rendering bug). */}
+                <View style={{ borderColor: colors.green, borderWidth: 1, borderRadius: 20, overflow: "hidden" }}>
+                    <TouchableRipple rippleColor={ colors.purpleRipple } onPress={ onCancel }>
+                        <View style={{ paddingVertical: 9, paddingHorizontal: 16 }}>
+                            <Text style={{ color: colors.green }}>Cancel</Text>
+                        </View>
+                    </TouchableRipple>
+                </View>
                 <View style={{ flex: 1 }}/>
-                { renderFlashButton(RNCamera.Constants.FlashMode.auto, "flash-auto") }
+                { renderTorchButton(false, "flash-off") }
                 <View style={{ width: 12 }}/>
-                { renderFlashButton(RNCamera.Constants.FlashMode.off, "flash-off") }
-                <View style={{ width: 12 }}/>
-                { renderFlashButton(RNCamera.Constants.FlashMode.on, "flash") }
-                <View style={{ width: 12 }}/>
-                { renderFlashButton(RNCamera.Constants.FlashMode.torch, "flashlight") }
+                { renderTorchButton(true, "flashlight") }
                 <View style={{ width: 24 }}/>
             </View>
             );
@@ -139,9 +158,21 @@ export function QRAddressScanView(props : QRAddressScanViewProps) : JSX.Element
                 <TitleBar title={ TARGET_TITLES[props.target] } onBurgerPressed={ props.onBurgerPressed }/>
                 <View style={ commonStyles.horizontalBar }/>
                 <View style={{ height: 24 }}/>
-                <ScrollView contentInsetAdjustmentBehavior="automatic" style={{ backgroundColor: COLOR_WHITE, margin: 0, padding: 0 }}>
-                    <QRCodeScanner showMarker={ true } flashMode={ flashMode } onRead={ onRead } bottomContent={ renderScannerFooter() }/>
-                </ScrollView>
+                <View style={{ flex: 1, backgroundColor: colors.white }}>
+                    { device != null && hasPermission
+                        ? (
+                            <Camera
+                                style={ StyleSheet.absoluteFill }
+                                device={ device }
+                                isActive={ true }
+                                torch={ torchOn ? 'on' : 'off' }
+                                codeScanner={ codeScanner }
+                                />
+                            )
+                        : null
+                        }
+                    { renderScannerFooter() }
+                </View>
             </>
             );
         }

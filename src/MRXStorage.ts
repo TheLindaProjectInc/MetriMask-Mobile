@@ -42,6 +42,18 @@ const TYPE_NUMBER : StoredType<number> =
         }
     };
 
+const TYPE_BOOLEAN : StoredType<boolean> =
+    {
+    toStoredStr: (value : boolean) : string =>
+        {
+        return value ? "1" : "0";
+        },
+    fromStoredStr: (storedStr : string) : boolean =>
+        {
+        return storedStr === "1";
+        }
+    };
+
 const TYPE_ACCOUNT_MANAGER : StoredType<AccountManager> =
     {
     toStoredStr: (value : AccountManager) : string =>
@@ -138,7 +150,7 @@ class StoredItem<ValueType>
         {
         if (!this.isInitialized) MC.raiseError(`StoredItem ${ this.storageKey } is being written before it's been initialized.`, "MRXStorage setValue()");
         this.currentValue = value;
-        if (isEmpty(value) && typeof value != "number")
+        if (isEmpty(value) && typeof value != "number" && typeof value != "boolean")
             return AsyncStorage.setItem(this.storageKey, "");
         else
             {
@@ -163,6 +175,7 @@ export class MRXStorage
     private browserFavouritesItem = new StoredItem<WebFavouritesList>("browserFaourites",  TYPE_WEB_FAVOURITES,  new WebFavouritesList()          );
     private browserHistoryItem    = new StoredItem<WebHistoryList>   ("browserHistory",    TYPE_WEB_HISTORY,     new WebHistoryList()             );
     private searchEngineIndexItem = new StoredItem<number>           ("seIndex",           TYPE_NUMBER,          0                                );
+    private darkModeItem          = new StoredItem<boolean>          ("darkMode",          TYPE_BOOLEAN,         false                            );
 
     public init() : Promise<void>
         {
@@ -178,6 +191,7 @@ export class MRXStorage
                 this.browserFavouritesItem.initItem(),
                 this.browserHistoryItem.initItem(),
                 this.searchEngineIndexItem.initItem(),
+                this.darkModeItem.initItem(),
                 ])
             .then((empties : void[]) : void =>
                 {
@@ -218,4 +232,8 @@ export class MRXStorage
     public get searchEngineIndex() : number                                { return this.searchEngineIndexItem.getValue();      }
     public set searchEngineIndex(value : number)                           { this.searchEngineIndexItem.setValue(value);        }
     public setSearchEngineIndex(value : number) : Promise<void>            { return this.searchEngineIndexItem.setValue(value); }
+
+    public get darkMode() : boolean                                        { return this.darkModeItem.getValue();               }
+    public set darkMode(value : boolean)                                   { this.darkModeItem.setValue(value);                 }
+    public setDarkMode(value : boolean) : Promise<void>                    { return this.darkModeItem.setValue(value);          }
     }

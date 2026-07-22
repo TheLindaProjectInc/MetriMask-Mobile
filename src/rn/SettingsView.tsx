@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { Text, View } from "react-native";
+import { Switch } from "react-native-paper";
 import DropDownPicker, { ItemType } from 'react-native-dropdown-picker';
 
 import { MC } from "../mc";
-import { COLOR_DARKISH_PURPLE, COLOR_MIDDLE_GREY, commonStyles, TitleBar } from "./common";
+import { useCommonStyles, dropDownPickerThemeProps, TitleBar } from "./common";
+import { useTheme } from "./theme";
 
 
 
@@ -26,6 +28,8 @@ export type SettingsViewProps =
 export function SettingsView(props : SettingsViewProps) : JSX.Element
     {
     const mc : MC = MC.getMC();
+    const commonStyles = useCommonStyles();
+    const theme = useTheme();
     const [ timeoutDDOpen, setTimeoutDDOpen ] = useState<boolean>(false);
     const [ timeoutDDValue, setTimeoutDDValue ] = useState<number>(actualInactivityTimeoutDDValue());
     const [ timeoutDDItems, setTimeoutDDItems ] = useState<ItemType<number>[]>(INACTIVITY_TIMEOUTS_DD);
@@ -54,10 +58,9 @@ export function SettingsView(props : SettingsViewProps) : JSX.Element
             <View style={ commonStyles.horizontalBar }/>
             <View style={ { height: 24 } }/>
             <View style={ commonStyles.squeezed }>
-                <Text style={{ color: COLOR_MIDDLE_GREY}}>Lock wallet after inactive for:</Text>
+                <Text style={{ color: theme.colors.middleGrey}}>Lock wallet after inactive for:</Text>
                 <DropDownPicker
-                    dropDownContainerStyle={{ borderColor: COLOR_DARKISH_PURPLE }}
-                    style={{ borderColor: COLOR_DARKISH_PURPLE }}
+                    { ...(dropDownPickerThemeProps(theme.colors) as any) }
                     maxHeight={ 300 }
                     flatListProps={{ initialNumToRender: 10 }}
                     items={ timeoutDDItems }
@@ -67,6 +70,12 @@ export function SettingsView(props : SettingsViewProps) : JSX.Element
                     setValue={ setTimeoutDDValue }
                     setItems={ setTimeoutDDItems }
                     onSelectItem={ onSelectTimeout }/>
+                <View style={ { height: 24 } }/>
+                <View style={ commonStyles.rowContainer }>
+                    <Text style={{ color: theme.colors.black, alignSelf: "center" }}>Dark Mode</Text>
+                    <View style={{ flex: 1 }}/>
+                    <Switch value={ theme.isDarkMode } color={ theme.colors.darkPurple } onValueChange={ theme.setDarkMode }/>
+                </View>
             </View>
         </View>
         );

@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { View, Text, ScrollView, GestureResponderEvent, Keyboard } from "react-native";
 
 import { BIG_0, DEFAULT_GAS_LIMIT, DEFAULT_GAS_PRICE_SATOSHI, MC, MRX_DECIMALS } from "../mc";
-import { commonStyles, SimpleDoublet, DoubleDoublet, formatSatoshi, BurgerlessTitleBar, SimpleButtonPair, SimpleTextInputPair, SimpleTextInput, validateAndSatoshizeFloatStr, validateIntStr, InvalidMessage, AddressQuasiDoublet, COLOR_BLACK, COLOR_MIDDLE_GREY, noumberOfDecimals } from "./common";
+import { useCommonStyles, SimpleDoublet, DoubleDoublet, formatSatoshi, BurgerlessTitleBar, SimpleButtonPair, SimpleTextInputPair, SimpleTextInput, validateAndSatoshizeFloatStr, validateIntStr, InvalidMessage, AddressQuasiDoublet, noumberOfDecimals } from "./common";
+import { useThemeColors } from "./theme";
 import { ContractCallParams } from "../WalletManager"
 import { USDPriceFinder } from "../USDPriceFinder";
 import { NET_ID } from "../NetInfo";
@@ -28,6 +29,8 @@ let lastNonce = 0;
 
 export function PermissionToSendView(props : PermissionToSendViewProps) : JSX.Element
     {
+    const colors = useThemeColors();
+    const commonStyles = useCommonStyles();
     const am = MC.getMC().storage.accountManager;
     const contractAddr : string = props.params.args[0];
 
@@ -132,7 +135,7 @@ export function PermissionToSendView(props : PermissionToSendViewProps) : JSX.El
     function renderBalanceUSD() : JSX.Element | null
         {
         if (am.current.wm.balanceUSD)
-            return (<Text style={{ color: COLOR_BLACK }}>{ "$ " + am.current.wm.balanceUSD }</Text>);
+            return (<Text style={{ color: colors.black }}>{ "$ " + am.current.wm.balanceUSD }</Text>);
         else
             return null;
         }
@@ -146,7 +149,7 @@ export function PermissionToSendView(props : PermissionToSendViewProps) : JSX.El
         if (amountToSend <= BIG_0) return null;
         const amountToSendUSD : string = PRICE_FINDER.satoshiToUSD(amountToSend);
         if (!amountToSendUSD) return null;
-        return (<Text style={{ color: COLOR_BLACK }}>{ "$ " + amountToSendUSD }</Text>);
+        return (<Text style={{ color: colors.black }}>{ "$ " + amountToSendUSD }</Text>);
         }
 
     return (
@@ -155,7 +158,7 @@ export function PermissionToSendView(props : PermissionToSendViewProps) : JSX.El
             <View style={ commonStyles.horizontalBar }/>
             <View style={{ ...commonStyles.squeezed, flexDirection: "column", flex: 1 }}>
                 <View style={{ height: 24 }} />
-                <Text style={{ color: COLOR_BLACK }}>A web page is asking your permission to send a transaction to a contract.</Text>
+                <Text style={{ color: colors.black }}>A web page is asking your permission to send a transaction to a contract.</Text>
                 <View style={{ height: 24 }} />
                 <DoubleDoublet titleL="Sending Account:" textL={ am.current.accountName } titleR="Network:" textR={ am.current.wm.ninfo.name } />
                 <View style={{ height: 7 }} />
@@ -177,10 +180,10 @@ export function PermissionToSendView(props : PermissionToSendViewProps) : JSX.El
                 <View style={{ height: 7 }} />
                 <SimpleDoublet title="Max Transaction Fee:" text={ maxTxFee.toString() + " MRX" }/>
                 <View style={{ height: 7 }} />
-                <Text style={{ color: COLOR_MIDDLE_GREY}}>Raw Contract Call:</Text>
+                <Text style={{ color: colors.middleGrey}}>Raw Contract Call:</Text>
                 <View style={{ height: 1 }} />
                 <ScrollView style={ commonStyles.borderedScroller }>
-                    <Text style={{ color: COLOR_BLACK }}>{ props.params.args[1] }</Text>
+                    <Text style={{ color: colors.black }}>{ props.params.args[1] }</Text>
                 </ScrollView>
                 <View style={{ height: 24 }} />
                 <SimpleButtonPair

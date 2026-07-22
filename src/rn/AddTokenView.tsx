@@ -3,7 +3,7 @@ import { GestureResponderEvent, Keyboard, View } from "react-native";
 
 import { ADDRESS_SYNTAX, MC } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
-import { commonStyles, InvalidMessage, SimpleButton, SimpleTextInput, TitleBar } from "./common";
+import { useCommonStyles, InvalidMessage, SimpleButton, SimpleTextInput, TitleBar } from "./common";
 import { MRC20Token } from "../MRC20";
 import { QR_SCANNER_TARGETS } from "./QRAddressScanView";
 import { WorkFunctionResult } from "./MainView";
@@ -36,6 +36,7 @@ let qrScannedAddress : string = "";
 
 export function AddTokenView(props : AddTokenViewProps) : JSX.Element
     {
+    const commonStyles = useCommonStyles();
     const [ address, setAddress ] = useState<string>(props.address ? props.address : "");
     const [ errMsg, setErrMsg ] = useState<string>(props.errMsg ? props.errMsg : "");
     const [ showQRButton, setShowQRButton ] = useState<boolean>(props.qrShouldShowButton());
