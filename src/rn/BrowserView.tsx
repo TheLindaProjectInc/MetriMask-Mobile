@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Text, View, StyleSheet, Platform, TouchableWithoutFeedback, ListRenderItemInfo, FlatList } from "react-native";
 import { IconButton, TouchableRipple } from 'react-native-paper';
 import DropDownPicker, { ItemType } from 'react-native-dropdown-picker';
@@ -27,9 +27,18 @@ function buildBrowserViewStyles(colors : ThemeColors)
             },
         buttonBar:
             {
-            height: 36,
+            // 56dp matches the Material "bottom app bar" spec -- tall enough for a comfortable
+            // touch target (the previous 36dp bar left icons feeling cramped and easy to mis-tap).
+            height: 56,
             backgroundColor: colors.lightPurple,
             flexDirection: "row",
+            borderTopWidth: 1,
+            borderTopColor: colors.lightishPurple,
+            elevation: 4,
+            shadowColor: "#000000",
+            shadowOffset: { width: 0, height: -2 },
+            shadowOpacity: 0.12,
+            shadowRadius: 3,
             },
         buttonView:
             {
@@ -37,6 +46,7 @@ function buildBrowserViewStyles(colors : ThemeColors)
             flex: 2,
             height: "100%",
             alignItems: "center",
+            justifyContent: "center",
             margin: 0,
             padding: 0
             },
@@ -87,8 +97,20 @@ function buildBrowserViewStyles(colors : ThemeColors)
             position: 'absolute',
             zIndex: 1001,
             backgroundColor: colors.white,
-            bottom: 24,
-            right: 24,
+            // Sits above the 56dp bottom bar plus a gap, styled as a floating card (rounded +
+            // shadow) rather than a plain rectangle glued into the corner.
+            bottom: 68,
+            right: 16,
+            borderRadius: 14,
+            paddingVertical: 6,
+            borderTopWidth: 1, borderRightWidth: 1, borderBottomWidth: 1, borderLeftWidth: 1,
+            borderTopColor: colors.lightishPurple, borderRightColor: colors.lightishPurple, borderBottomColor: colors.lightishPurple, borderLeftColor: colors.lightishPurple,
+            elevation: 6,
+            shadowColor: "#000000",
+            shadowOffset: { width: 0, height: 3 },
+            shadowOpacity: 0.2,
+            shadowRadius: 6,
+            overflow: "hidden",
             },
         });
     }
@@ -120,6 +142,24 @@ export class WebFavouritesList extends RNWebRefList
     public static fromStorageStr(storageStr : string) : WebFavouritesList
         {
         return new WebFavouritesList(WebRefList.makeWebRefArray(storageStr, (so? : WebRefStorageObj) : WebRef => new RNWebRef(so)));
+        }
+
+    // Favourites a fresh install ships with. Stored the same way as any user-added favourite, so
+    // they're removable via the normal "X" on the favourites list -- once removed (or once the
+    // user adds their own), the persisted list takes over and this default is never consulted again.
+    public static withDefaults() : WebFavouritesList
+        {
+        const defaults : [ string, string ][] =
+            [
+            [ "https://metrixlgp.finance",   "Metrix LGP"          ],
+            [ "https://metriverse.exchange", "Metriverse Exchange" ],
+            [ "https://pyropets.org",        "PyroPets"            ],
+            [ "https://metrix.place",        "Metrix Place"        ],
+            [ "https://metrix.domains",      "Metrix Domains"      ],
+            ];
+        let epochMillis = Date.now();
+        const refs : WebRef[] = defaults.map(([ url, title ] : [ string, string ]) : WebRef => new RNWebRef({ url, title, epochMillis: epochMillis-- }));
+        return new WebFavouritesList(refs);
         }
 
     protected saveSelf() : void
@@ -219,7 +259,11 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
     const favourites : WebFavouritesList = storage.browserFavourites;
     const history : WebHistoryList = storage.browserHistory;
 
-    let allTabsAPI : BrowserAllTabsViewAPI | null = null;
+    // A ref (not a plain local) because it's read synchronously during render (e.g. the tab
+    // list's FlatList data below): a plain `let` is reset to null on every re-render and only
+    // repopulated by the child's effect *after* commit, so the very first render after switching
+    // to the tab list would always see null and crash. A ref's value survives across renders.
+    const allTabsAPIRef = useRef<BrowserAllTabsViewAPI | null>(null);
 
     function initialSEItems() : ItemType<number>[]
         {
@@ -231,7 +275,7 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
 
     function getApi(api : BrowserAllTabsViewAPI) : void
         {
-        allTabsAPI = api;
+        allTabsAPIRef.current = api;
         mc.setAllTabsAPI(api);
         }
 
@@ -271,20 +315,20 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
 
     function openNewTab(url : string) : void
         {
-        if (allTabsAPI)
+        if (allTabsAPIRef.current)
             {
-            allTabsAPI.setHiding(false);
-            allTabsAPI.activateTab(new BrowserTabContext(MC.getUniqueInt(), url));
+            allTabsAPIRef.current.setHiding(false);
+            allTabsAPIRef.current.activateTab(new BrowserTabContext(MC.getUniqueInt(), url));
             setTabNonce(tabNonce + 1);
             }
         }
 
     function onBottomBarCloseTabPressed() : void
         {
-        if (allTabsAPI)
+        if (allTabsAPIRef.current)
             {
-            allTabsAPI.setHiding(false);
-            allTabsAPI.closeTabById(activeTabId());
+            allTabsAPIRef.current.setHiding(false);
+            allTabsAPIRef.current.closeTabById(activeTabId());
             setTabNonce(tabNonce + 1);
             }
         }
@@ -292,32 +336,32 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
     function onTabListPressed() : void
         {
         setWhatShowing(Screen.tabs);
-        if (allTabsAPI) allTabsAPI.setHiding(true);
+        if (allTabsAPIRef.current) allTabsAPIRef.current.setHiding(true);
         }
 
     function openMenu() : void
         {
-        if (allTabsAPI)
+        if (allTabsAPIRef.current)
             {
-            allTabsAPI.activateMenu(renderMenu);
+            allTabsAPIRef.current.activateMenu(renderMenu);
             setMenuShowing(true);
             }
         }
 
     function closeMenu() : void
         {
-        if (allTabsAPI) allTabsAPI.dismissMenu();
+        if (allTabsAPIRef.current) allTabsAPIRef.current.dismissMenu();
         setMenuShowing(false);
         }
 
     function activeTabId() : number
         {
-        return allTabsAPI ? allTabsAPI.activeTabId() : -1;
+        return allTabsAPIRef.current ? allTabsAPIRef.current.activeTabId() : -1;
         }
 
     function activeTab() : BrowserTabContextBase | null
         {
-        return allTabsAPI ? allTabsAPI.activeTab() : null;
+        return allTabsAPIRef.current ? allTabsAPIRef.current.activeTab() : null;
         }
 
     function allTabsOnLoadEnd(tabContext : BrowserTabContextBase) : void
@@ -328,25 +372,25 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
     function onTabListItemPressed(tabContext : BrowserTabContextBase) : void
         {
         resumeShowingBrowser();
-        if (allTabsAPI)
+        if (allTabsAPIRef.current)
             {
-            allTabsAPI.setHiding(false);
-            allTabsAPI.activateTab(tabContext);
+            allTabsAPIRef.current.setHiding(false);
+            allTabsAPIRef.current.activateTab(tabContext);
             }
         }
 
     function openInOtherBrowser() : void
         {
         closeMenu();
-        if (allTabsAPI) allTabsAPI.openInOtherBrowser();
+        if (allTabsAPIRef.current) allTabsAPIRef.current.openInOtherBrowser();
         }
 
     function addFavourite() : void
         {
         closeMenu();
-        if (allTabsAPI)
+        if (allTabsAPIRef.current)
             {
-            const activeTab : BrowserTabContextBase | null = allTabsAPI.activeTab();
+            const activeTab : BrowserTabContextBase | null = allTabsAPIRef.current.activeTab();
             if (activeTab) favourites.addRef(activeTab);
             }
         }
@@ -354,9 +398,9 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
     function setHome() : void
         {
         closeMenu();
-        if (allTabsAPI)
+        if (allTabsAPIRef.current)
             {
-            const activeTab : BrowserTabContextBase | null = allTabsAPI.activeTab();
+            const activeTab : BrowserTabContextBase | null = allTabsAPIRef.current.activeTab();
             if (activeTab) mc.storage.browserHomePage = activeTab.currentUrl;
             }
         }
@@ -370,21 +414,21 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
     function showFavourites() : void
         {
         setWhatShowing(Screen.favourites);
-        if (allTabsAPI) allTabsAPI.setHiding(true);
+        if (allTabsAPIRef.current) allTabsAPIRef.current.setHiding(true);
         closeMenu();
         }
 
     function showHistory() : void
         {
         setWhatShowing(Screen.history);            
-        if (allTabsAPI) allTabsAPI.setHiding(true);
+        if (allTabsAPIRef.current) allTabsAPIRef.current.setHiding(true);
         closeMenu();
         }
 
     function showSettings() : void
         {
         setWhatShowing(Screen.settings);            
-        if (allTabsAPI) allTabsAPI.setHiding(true);
+        if (allTabsAPIRef.current) allTabsAPIRef.current.setHiding(true);
         closeMenu();
         }
 
@@ -392,27 +436,27 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
         {
         if (tabCount > 0)
             goToUrl(mc.storage.browserHomePage);
-        else if (allTabsAPI)
-            allTabsAPI.activateSoloTab(new BrowserTabContext(MC.getUniqueInt(), mc.storage.browserHomePage));
+        else if (allTabsAPIRef.current)
+            allTabsAPIRef.current.activateSoloTab(new BrowserTabContext(MC.getUniqueInt(), mc.storage.browserHomePage));
         closeMenu();
         }
 
     function goToUrl(url : string) : void
         {
-        if (allTabsAPI)
+        if (allTabsAPIRef.current)
             {
-            const activeTab : BrowserTabContextBase | null = allTabsAPI.activeTab();
+            const activeTab : BrowserTabContextBase | null = allTabsAPIRef.current.activeTab();
             if (activeTab)
                 activeTab.goToUrl(url);
             else
-                allTabsAPI.activateTab(new BrowserTabContext(MC.getUniqueInt(), url));
+                allTabsAPIRef.current.activateTab(new BrowserTabContext(MC.getUniqueInt(), url));
             }
         }
 
     function resumeShowingBrowser() : void
         {
         setWhatShowing(Screen.browser);
-        if (allTabsAPI) allTabsAPI.setHiding(false);
+        if (allTabsAPIRef.current) allTabsAPIRef.current.setHiding(false);
         }
 
     function ListTabs() : JSX.Element
@@ -420,7 +464,7 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
         function onCloseTabListItemPressed(tabContext : BrowserTabContextBase) : void
             {
             setTabNonce(tabNonce + 1);
-            if (allTabsAPI) allTabsAPI.closeTab(tabContext);
+            if (allTabsAPIRef.current) allTabsAPIRef.current.closeTab(tabContext);
             if (tabCount <= 1) resumeShowingBrowser();
             }
     
@@ -444,7 +488,7 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
             return (
                 <>
                     { renderListHeader("Open Tabs") }
-                    <FlatList<BrowserTabContextBase> data={ allTabsAPI!.tabList() } renderItem={ renderItem } keyExtractor={ getKey } extraData={ tabNonce }/>
+                    <FlatList<BrowserTabContextBase> data={ allTabsAPIRef.current!.tabList() } renderItem={ renderItem } keyExtractor={ getKey } extraData={ tabNonce }/>
                 </>
                 );
         else
@@ -465,8 +509,8 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
             {
             if (tabCount > 0)
                 goToUrl(wref.url);
-            else if (allTabsAPI)
-                allTabsAPI.activateSoloTab(new BrowserTabContext(MC.getUniqueInt(), wref.url));
+            else if (allTabsAPIRef.current)
+                allTabsAPIRef.current.activateSoloTab(new BrowserTabContext(MC.getUniqueInt(), wref.url));
             resumeShowingBrowser();
             }
 
@@ -563,26 +607,26 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
         return (
             <View style={ browserViewStyles.buttonBar }>
                 <View style={ browserViewStyles.buttonView }>
-                    <IconButton style={ commonStyles.icon } rippleColor={ colors.purpleRipple } iconColor={ colors.darkPurple } size={ 24 } icon="arrow-left" disabled={ !canGoBack } onPress={ onBackPressed }/>
+                    <IconButton style={ commonStyles.icon } rippleColor={ colors.purpleRipple } iconColor={ colors.darkPurple } size={ 28 } icon="arrow-left" disabled={ !canGoBack } onPress={ onBackPressed }/>
                 </View>
                 <View style={ browserViewStyles.buttonView }>
-                    <IconButton style={ commonStyles.icon } rippleColor={ colors.purpleRipple } iconColor={ colors.darkPurple } size={ 24 } icon="refresh" disabled={ tabCount == 0 } onPress={ onLoadPressed }/>
+                    <IconButton style={ commonStyles.icon } rippleColor={ colors.purpleRipple } iconColor={ colors.darkPurple } size={ 28 } icon="refresh" disabled={ tabCount == 0 } onPress={ onLoadPressed }/>
                 </View>
                 <View style={ browserViewStyles.buttonView }>
-                    <IconButton style={ commonStyles.icon } rippleColor={ colors.purpleRipple } iconColor={ colors.darkPurple } size={ 24 } icon="arrow-right" disabled={ !canGoForward } onPress={ onForwardPressed }/>
+                    <IconButton style={ commonStyles.icon } rippleColor={ colors.purpleRipple } iconColor={ colors.darkPurple } size={ 28 } icon="arrow-right" disabled={ !canGoForward } onPress={ onForwardPressed }/>
                 </View>
                 <View style={ browserViewStyles.halfButtonView }></View>
                 <View style={ browserViewStyles.buttonView }>
-                    <IconButton style={ commonStyles.icon } rippleColor={ colors.purpleRipple } iconColor={ colors.darkPurple } size={ 24 } icon="tab-plus" onPress={ onNewTabPressed }/>
+                    <IconButton style={ commonStyles.icon } rippleColor={ colors.purpleRipple } iconColor={ colors.darkPurple } size={ 28 } icon="tab-plus" onPress={ onNewTabPressed }/>
                 </View>
                 <View style={ browserViewStyles.buttonView }>
-                    <IconButton style={ commonStyles.icon } rippleColor={ colors.purpleRipple } iconColor={ colors.darkPurple } size={ 24 } icon="tab-remove" disabled={ tabCount == 0 } onPress={ onBottomBarCloseTabPressed }/>
+                    <IconButton style={ commonStyles.icon } rippleColor={ colors.purpleRipple } iconColor={ colors.darkPurple } size={ 28 } icon="tab-remove" disabled={ tabCount == 0 } onPress={ onBottomBarCloseTabPressed }/>
                 </View>
                 <View style={ browserViewStyles.buttonView }>
-                    <IconButton style={ commonStyles.icon } rippleColor={ colors.purpleRipple } iconColor={ colors.darkPurple } size={ 24 } icon="tab" disabled={ tabCount == 0 } onPress={ onTabListPressed }/>
+                    <IconButton style={ commonStyles.icon } rippleColor={ colors.purpleRipple } iconColor={ colors.darkPurple } size={ 28 } icon="tab" disabled={ tabCount == 0 } onPress={ onTabListPressed }/>
                 </View>
                 <View style={ browserViewStyles.buttonView }>
-                    <IconButton style={ commonStyles.icon } rippleColor={ colors.purpleRipple } iconColor={ colors.darkPurple } size={ 24 } icon="dots-horizontal" onPress={ openMenu }/>
+                    <IconButton style={ commonStyles.icon } rippleColor={ colors.purpleRipple } iconColor={ colors.darkPurple } size={ 28 } icon="dots-horizontal" onPress={ openMenu }/>
                 </View>
             </View>
             );

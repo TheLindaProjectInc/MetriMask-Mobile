@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { Camera, useCameraDevice, useCameraPermission, useCodeScanner } from 'react-native-vision-camera';
+import { LayoutChangeEvent, StyleSheet, Text, View } from "react-native";
+import { Camera, useCameraDevice, useCameraFormat, useCameraPermission, useCodeScanner } from 'react-native-vision-camera';
 import { IconButton, TouchableRipple } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
@@ -49,7 +49,27 @@ export function QRAddressScanView(props : QRAddressScanViewProps) : JSX.Element
     const commonStyles = useCommonStyles();
     const [ torchOn, setTorchOn ] = useState<boolean>(false);
     const [ errorMessage, setErrorMessage ] = useState<string>("");
+    // CameraX (which VisionCamera is built on) binds its capture session against the actual
+    // measured size of the native preview surface. If that binding happens before React Native's
+    // layout pass has given the surface a real (non-zero) size, the session can either time out
+    // (session/invalid-output-configuration) or silently deliver 0 frames while the sensor
+    // captures fine underneath (blank/white screen) -- both of which we hit on-device. Gating
+    // Camera's mount on a real onLayout avoids binding against an unmeasured surface.
+    const [ cameraContainerReady, setCameraContainerReady ] = useState<boolean>(false);
+
+    function onCameraContainerLayout(event : LayoutChangeEvent) : void
+        {
+        const { width, height } = event.nativeEvent.layout;
+        if (width > 0 && height > 0 && !cameraContainerReady) setCameraContainerReady(true);
+        }
     const device = useCameraDevice('back');
+    // Without an explicit format, VisionCamera negotiates the device's default (often
+    // highest-resolution) format, and on some hardware -- notably several Samsung models --
+    // configuring the camera session at that resolution doesn't complete within the library's
+    // 5s timeout, crashing with "session/invalid-output-configuration". A QR scanner never
+    // needs more than ~720p, so constrain the format to something every camera HAL can
+    // configure quickly.
+    const format = useCameraFormat(device, [ { videoResolution: { width: 1280, height: 720 } }, { fps: 30 } ]);
     const { hasPermission, requestPermission } = useCameraPermission();
 
     useEffect(() =>
@@ -108,7 +128,7 @@ export function QRAddressScanView(props : QRAddressScanViewProps) : JSX.Element
     function renderErrorMessage() : JSX.Element
         {
         return (
-            <>
+            <View style={ commonStyles.containingView }>
                 <TitleBar title={ TARGET_TITLES[props.target] } onBurgerPressed={ props.onBurgerPressed }/>
                 <View style={ commonStyles.horizontalBar }/>
                 <View style={ commonStyles.squeezed }>
@@ -117,7 +137,7 @@ export function QRAddressScanView(props : QRAddressScanViewProps) : JSX.Element
                     <View style={{ height: 48 }}/>
                     <SimpleButtonPair left={{ text: "Cancel", onPress: onCancel }} right={{ text: "Scan More", onPress: onRescan }}/>
                 </View>
-            </>
+            </View>
             );
         }
 
@@ -154,26 +174,36 @@ export function QRAddressScanView(props : QRAddressScanViewProps) : JSX.Element
     function renderQRSanner() : JSX.Element
         {
         return (
-            <>
+            <View style={ commonStyles.containingView }>
                 <TitleBar title={ TARGET_TITLES[props.target] } onBurgerPressed={ props.onBurgerPressed }/>
                 <View style={ commonStyles.horizontalBar }/>
                 <View style={{ height: 24 }}/>
-                <View style={{ flex: 1, backgroundColor: colors.white }}>
-                    { device != null && hasPermission
+                <View style={{ flex: 1, backgroundColor: colors.white }} onLayout={ onCameraContainerLayout }>
+                    { device != null && hasPermission && cameraContainerReady
                         ? (
                             <Camera
                                 style={ StyleSheet.absoluteFill }
                                 device={ device }
+                                format={ format }
+                                // The default ('native') pixel format can silently stall the
+                                // frame pipeline -- camera session opens fine, but 0 frames ever
+                                // reach the preview or the code scanner -- when a preview stream
+                                // and the code scanner's analysis stream are bound together on
+                                // some non-Qualcomm chipsets (observed on MediaTek). Forcing YUV
+                                // avoids that stall.
+                                pixelFormat="yuv"
+                                fps={ 30 }
                                 isActive={ true }
                                 torch={ torchOn ? 'on' : 'off' }
                                 codeScanner={ codeScanner }
+                                onError={ (e) : void => setErrorMessage(`Camera error: ${ e.message }`) }
                                 />
                             )
                         : null
                         }
                     { renderScannerFooter() }
                 </View>
-            </>
+            </View>
             );
         }
 

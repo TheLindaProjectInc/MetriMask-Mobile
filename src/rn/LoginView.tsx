@@ -193,12 +193,12 @@ export function LoginView(props : LoginViewProps) : JSX.Element
             <View style={ commonStyles.squeezed }>
                 { renderPasswordInput() }
                 <View style={{ height: 24 }}/>
-                <SimpleButton text="Unlock Wallet" onPress = { () => { login(); } }/>
+                <SimpleButton text="Unlock Wallet" variant="primary" onPress = { () => { login(); } }/>
                 { renderInvalidPassword() }
             </View>
             <View style={{ flex: 400 }}/>
             <View style={ commonStyles.squeezed }>
-                <SimpleButton text="Reset Metrimask" onPress = { () => { resetApp(); } }/>
+                <SimpleButton text="Reset Metrimask" variant="danger" onPress = { () => { resetApp(); } }/>
             </View>
             <View style={{ height: 24 }}/>
         </View>

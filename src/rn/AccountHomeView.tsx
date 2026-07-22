@@ -9,7 +9,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import DropDownPicker, { ItemType, ValueType} from 'react-native-dropdown-picker';
 import { TabView, TabBar, SceneMap, SceneRendererProps, NavigationState, } from 'react-native-tab-view';
 
-import { useCommonStyles, dropDownPickerThemeProps, formatSatoshi, TitleBar, SimpleDoublet, LOADING_STR, NO_INFO_STR, DoubleDoublet, SimpleButton, SimpleButtonPair, AddressQuasiDoublet } from "./common";
+import { useCommonStyles, dropDownPickerThemeProps, formatSatoshi, TitleBar, SimpleDoublet, LOADING_STR, NO_INFO_STR, DoubleDoublet, SimpleButton, SimpleButtonPair, AddressQuasiDoublet, Card } from "./common";
 import { ThemeColors, useThemeColors } from "./theme";
 import { BIG_0, MC, MRX_DECIMALS } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
@@ -471,28 +471,31 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
             <View style={ commonStyles.horizontalBar }/>
             <View style={{ height: 20 }} />
             <View style={ commonStyles.squeezed }>
-                <Text style={{ color: colors.middleGrey}}>Account:</Text>
-                <DropDownPicker
-                    { ...(dropDownPickerThemeProps(colors) as any) }
-                    maxHeight={ 200 }
-                    items={ accountDDItems }
-                    open={ accountDDOpen }
-                    value={ accountDDValue as string }
-                    setOpen={ setAccountDDOpen }
-                    setValue={ setAccountDDValue }
-                    setItems={ setAccountDDItems }
-                    onSelectItem={ onSelectAccount }
-                    />
-                <View style={{ height: 24 }} />
-                <DoubleDoublet titleL="Network:" textL={ am.current.wm.ninfo.name } titleR="Unconfirmed MRX:" textR={ unconfirmedBalance }/>
-                <View style={{ height: 7 }} />
-                <AddressQuasiDoublet title="Address:" acnt={ am.current }/>
-                <View style={{ height: 7 }} />
-                <SimpleDoublet title="MRX Balance:" text={ balance } />
-                { renderBalanceUSD() }
-                <View style={{ height: 24 }} />
-                <SimpleButtonPair left={{ text: "Send", icon: "debug-step-out", onPress: onSend }} right={{ text: "Receive", icon: "debug-step-into", onPress: onReceive }}/>
-                <View style={{ height: 24 }} />
+                <Card>
+                    <Text style={{ color: colors.middleGrey}}>Account:</Text>
+                    <DropDownPicker
+                        { ...(dropDownPickerThemeProps(colors) as any) }
+                        maxHeight={ 200 }
+                        items={ accountDDItems }
+                        open={ accountDDOpen }
+                        value={ accountDDValue as string }
+                        setOpen={ setAccountDDOpen }
+                        setValue={ setAccountDDValue }
+                        setItems={ setAccountDDItems }
+                        onSelectItem={ onSelectAccount }
+                        />
+                    <View style={{ height: 24 }} />
+                    <DoubleDoublet titleL="Network:" textL={ am.current.wm.ninfo.name } titleR="Unconfirmed MRX:" textR={ unconfirmedBalance }/>
+                    <View style={{ height: 7 }} />
+                    <AddressQuasiDoublet title="Address:" acnt={ am.current }/>
+                    <View style={{ height: 12 }} />
+                    <Text style={{ color: colors.middleGrey }}>MRX Balance:</Text>
+                    <Text style={{ color: colors.darkPurple, fontSize: 28, fontWeight: "700" }}>{ balance }</Text>
+                    { renderBalanceUSD() }
+                </Card>
+                <View style={{ height: 20 }} />
+                <SimpleButtonPair left={{ text: "Send", icon: "debug-step-out", variant: "primary", onPress: onSend }} right={{ text: "Receive", icon: "debug-step-into", variant: "primary", onPress: onReceive }}/>
+                <View style={{ height: 20 }} />
             </View>
             <DividerBar/>
             <TabView navigationState={{ index: tabIndex, routes: tabRoutes }} renderScene={ tabSceneMap } onIndexChange={ setTabIndex } initialLayout={{ width: layout.width }} renderTabBar={ renderTabBar }/>
