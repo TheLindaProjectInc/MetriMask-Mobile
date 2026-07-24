@@ -13,6 +13,7 @@ import { MRXStorage, SALT_BYTE_LEN } from "./MRXStorage";
 import { MainViewAPI, WorkFunctionResult } from './rn/MainView';
 import { ContractCallParams } from './WalletManager';
 import { isMnsName } from './nameUtils';
+import { nim } from './NetInfo';
 
 
 
@@ -96,6 +97,7 @@ export class MC // MC: Master of Ceremonies -- the place where the different par
     private async initStore() : Promise<void>
         {
         await this.store.init();
+        nim().applyStoredOverrides(this.store.explorerOverrides);
         if (!this.store.salt.length)
             {
             await this.store.setVersion(STORAGE_VERSION_NUMBER);
@@ -281,6 +283,11 @@ export class MC // MC: Master of Ceremonies -- the place where the different par
     public static logErrorMessage(message : string)
         {
         MC.messageArray.push(">" + Date.now().toString() + ": " + message);
+        }
+
+    public static isNetworkError(e : any) : boolean // True for a failed fetch() (unreachable host, DNS failure, timeout, etc), as opposed to a genuine app bug.
+        {
+        return e instanceof TypeError && typeof e.message === "string" && e.message.indexOf("Network request failed") !== -1;
         }
 
     public static errorFunc(extraInfo : string | null = null) : (e : any) => void

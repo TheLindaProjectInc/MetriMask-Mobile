@@ -329,7 +329,13 @@ export class AccountManager
                 })
             .catch((e : any) : void =>
                 {
-                MC.raiseError(e, "Polling action error.");
+                // A poll cycle failing because the account's (possibly custom) explorer backend is
+                // temporarily unreachable shouldn't be fatal -- just skip this cycle and retry on the
+                // next one, same as a real user losing wifi mid-poll would need to self-heal.
+                if (MC.isNetworkError(e))
+                    MC.logErrorMessage(`Polling action network error (will retry next cycle): ${ MC.errorToString(e) }`);
+                else
+                    MC.raiseError(e, "Polling action error.");
                 this.finishPollingRepetitionUnit(myNonce);
                 });
             }

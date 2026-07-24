@@ -115,6 +115,13 @@ export function buildCommonStyles(colors : ThemeColors)
             backgroundColor: colors.redWash,
             fontWeight: "bold",
             },
+        validViewText:
+            {
+            padding: 24,
+            color: colors.black,
+            backgroundColor: colors.greenWash,
+            fontWeight: "bold",
+            },
         flex1:
             {
             flex: 1,
@@ -231,6 +238,23 @@ export function InvalidMessage(props : InvalidMessageProps) : JSX.Element
         <View style={ commonStyles.invalidView }>
             <View style={{ flex: 1 }}/>
             <Text style={ commonStyles.invalidViewText }>{ props.text }</Text>
+            <View style={{ flex: 1 }}/>
+        </View>
+        );
+    }
+
+export type ValidMessageProps =
+    {
+    text: string;
+    }
+
+export function ValidMessage(props : ValidMessageProps) : JSX.Element
+    {
+    const commonStyles = useCommonStyles();
+    return (
+        <View style={ commonStyles.invalidView }>
+            <View style={{ flex: 1 }}/>
+            <Text style={ commonStyles.validViewText }>{ props.text }</Text>
             <View style={{ flex: 1 }}/>
         </View>
         );

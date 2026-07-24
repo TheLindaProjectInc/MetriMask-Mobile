@@ -90,6 +90,19 @@ const TYPE_WEB_HISTORY : StoredType<WebHistoryList> =
         }
     };
 
+const TYPE_NETWORK_OVERRIDES : StoredType<Record<string, string>> =
+    {
+    toStoredStr: (value : Record<string, string>) : string =>
+        {
+        return isEmpty(value) ? "" : JSON.stringify(value);
+        },
+    fromStoredStr: (storedStr : string) : Record<string, string> =>
+        {
+        try         { return JSON.parse(storedStr); }
+        catch (e)   { return {};                    }
+        }
+    };
+
 const TYPE_UINT8ARRAY : StoredType<Uint8Array> =
     {
     toStoredStr: (value : Uint8Array) : string =>
@@ -176,6 +189,7 @@ export class MRXStorage
     private browserHistoryItem    = new StoredItem<WebHistoryList>   ("browserHistory",    TYPE_WEB_HISTORY,     new WebHistoryList()             );
     private searchEngineIndexItem = new StoredItem<number>           ("seIndex",           TYPE_NUMBER,          0                                );
     private darkModeItem          = new StoredItem<boolean>          ("darkMode",          TYPE_BOOLEAN,         false                            );
+    private explorerOverridesItem = new StoredItem<Record<string,string>>("explorerOverrides", TYPE_NETWORK_OVERRIDES, {}                        );
 
     public init() : Promise<void>
         {
@@ -192,6 +206,7 @@ export class MRXStorage
                 this.browserHistoryItem.initItem(),
                 this.searchEngineIndexItem.initItem(),
                 this.darkModeItem.initItem(),
+                this.explorerOverridesItem.initItem(),
                 ])
             .then((empties : void[]) : void =>
                 {
@@ -236,4 +251,8 @@ export class MRXStorage
     public get darkMode() : boolean                                        { return this.darkModeItem.getValue();               }
     public set darkMode(value : boolean)                                   { this.darkModeItem.setValue(value);                 }
     public setDarkMode(value : boolean) : Promise<void>                    { return this.darkModeItem.setValue(value);          }
+
+    public get explorerOverrides() : Record<string,string>                     { return this.explorerOverridesItem.getValue();      }
+    public set explorerOverrides(value : Record<string,string>)                { this.explorerOverridesItem.setValue(value);        }
+    public setExplorerOverrides(value : Record<string,string>) : Promise<void> { return this.explorerOverridesItem.setValue(value); }
     }

@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { Network, networks } from "metrixjs-wallet";
+import { Insight, Network, networks } from "metrixjs-wallet";
 import { MNS, Name, getMNSAddress, DefaultReverseResolver, getMNSContract, BaseResolver } from '@metrixnames/mnslib';
 import ABI from '@metrixnames/mnslib/lib/abi';
 import { APIProvider, NetworkType, Provider, MetrixContract } from '@metrixcoin/metrilib';
@@ -42,6 +42,12 @@ export class NetInfo
     public get name()    : string  { return this.ownName;     }
     public get id()      : number  { return this.ownId;       }
     public get network() : Network { return this.hostNetwork; }
+
+    public setExplorerUrlHeaders(txUrlHeader : string, tokenUrlHeader : string) : void
+        {
+        this.txUrlHeader = txUrlHeader;
+        this.tokenUrlHeader = tokenUrlHeader;
+        }
 
     public toTxUrl(txId : string) : string
         {
@@ -212,16 +218,27 @@ export class NetInfoWithMns extends NetInfo
 
 
 
+const DEFAULT_EXPLORER_BASE : Record<string, string> =
+    {
+    MainNet: "https://explorer.metrixcoin.com",
+    TestNet: "https://testnet-explorer.metrixcoin.com",
+    };
+
 export class NetInfoManager
     {
     private infoArray : NetInfo[] = [ ];
     private infosByNmae : Map<string, NetInfo> = new Map<string, NetInfo>();
+    private explorerBaseByName : Map<string, string> = new Map<string, string>();
 
     public constructor()
         {
-        this.infoArray.push(new NetInfoWithMns("MainNet", NET_ID.MAIN, "https://explorer.metrixcoin.com/tx/",         "https://explorer.metrixcoin.com/mrc20/",         networks.mainnet));
-        this.infoArray.push(new NetInfoWithMns("TestNet", NET_ID.TEST, "https://testnet-explorer.metrixcoin.com/tx/", "https://testnet-explorer.metrixcoin.com/mrc20/", networks.testnet));
-        for (const ni of this.infoArray) this.infosByNmae.set(ni.name, ni);
+        this.infoArray.push(new NetInfoWithMns("MainNet", NET_ID.MAIN, `${ DEFAULT_EXPLORER_BASE.MainNet }/tx/`, `${ DEFAULT_EXPLORER_BASE.MainNet }/mrc20/`, networks.mainnet));
+        this.infoArray.push(new NetInfoWithMns("TestNet", NET_ID.TEST, `${ DEFAULT_EXPLORER_BASE.TestNet }/tx/`, `${ DEFAULT_EXPLORER_BASE.TestNet }/mrc20/`, networks.testnet));
+        for (const ni of this.infoArray)
+            {
+            this.infosByNmae.set(ni.name, ni);
+            this.explorerBaseByName.set(ni.name, DEFAULT_EXPLORER_BASE[ni.name]);
+            }
         }
 
     public fromId(id : number) : NetInfo
@@ -238,6 +255,40 @@ export class NetInfoManager
         const ni = this.infosByNmae.get(name);
         if (!ni) MC.raiseError(`NetInfoManager unknown network name ${ name }`, "NetInfoManager fromName()");
         return ni!;
+        }
+
+    public explorerBase(name : string) : string
+        {
+        return this.explorerBaseByName.get(name) || DEFAULT_EXPLORER_BASE[name] || "";
+        }
+
+    public applyOverride(name : string, baseUrl : string) : void
+        {
+        const ni = this.fromName(name);
+        const base = baseUrl.replace(/\/+$/, "");
+        ni.setExplorerUrlHeaders(`${ base }/tx/`, `${ base }/mrc20/`);
+        Insight.setBaseURLOverride(ni.network.info.name, `${ base }/api`);
+        APIProvider.setBaseURLOverride(name as NetworkType, `${ base }/api`);
+        this.explorerBaseByName.set(name, base);
+        }
+
+    public resetOverride(name : string) : void
+        {
+        const ni = this.fromName(name);
+        const base = DEFAULT_EXPLORER_BASE[name];
+        ni.setExplorerUrlHeaders(`${ base }/tx/`, `${ base }/mrc20/`);
+        Insight.clearBaseURLOverride(ni.network.info.name);
+        APIProvider.clearBaseURLOverride(name as NetworkType);
+        this.explorerBaseByName.set(name, base);
+        }
+
+    public applyStoredOverrides(overrides : Record<string, string>) : void
+        {
+        for (const name of Object.keys(overrides))
+            {
+            const url = overrides[name];
+            if (url) this.applyOverride(name, url);
+            }
         }
     }
 

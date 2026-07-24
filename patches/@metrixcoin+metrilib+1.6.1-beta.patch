@@ -1,0 +1,119 @@
+diff --git a/node_modules/@metrixcoin/metrilib/lib/provider/APIProvider.d.ts b/node_modules/@metrixcoin/metrilib/lib/provider/APIProvider.d.ts
+index 4cfd984..49a9755 100644
+--- a/node_modules/@metrixcoin/metrilib/lib/provider/APIProvider.d.ts
++++ b/node_modules/@metrixcoin/metrilib/lib/provider/APIProvider.d.ts
+@@ -6,6 +6,8 @@ import { APIEventLogs } from '../mrx/interface/APIEventLogs';
+ export default class APIProvider implements Provider {
+     network: NetworkType;
+     constructor(network: NetworkType);
++    static setBaseURLOverride(network: NetworkType, baseURL: string): void;
++    static clearBaseURLOverride(network: NetworkType): void;
+     private getTransactionReceipt;
+     getTxReceipts(tx: {
+         txid: string;
+diff --git a/node_modules/@metrixcoin/metrilib/lib/provider/APIProvider.js b/node_modules/@metrixcoin/metrilib/lib/provider/APIProvider.js
+index 9cd7a82..467eda4 100644
+--- a/node_modules/@metrixcoin/metrilib/lib/provider/APIProvider.js
++++ b/node_modules/@metrixcoin/metrilib/lib/provider/APIProvider.js
+@@ -15,22 +15,31 @@ Object.defineProperty(exports, "__esModule", { value: true });
+ const ethers_1 = require("ethers");
+ const node_fetch_1 = __importDefault(require("node-fetch"));
+ const AddressUtils_1 = require("../utils/AddressUtils");
++// Patched for MetriMask's custom-explorer-backend Settings feature: lets the app override the
++// API base URL per network at runtime, without forking the whole package.
++const BASEURL_OVERRIDES = {};
++const DEFAULT_BASEURLS = {
++    MainNet: 'https://explorer.metrixcoin.com/api',
++    TestNet: 'https://testnet-explorer.metrixcoin.com/api',
++};
++function resolveBaseURL(network) {
++    return BASEURL_OVERRIDES[network] || DEFAULT_BASEURLS[network];
++}
+ class APIProvider {
+     constructor(network) {
+         this.network = network;
+     }
++    static setBaseURLOverride(network, baseURL) {
++        BASEURL_OVERRIDES[network] = baseURL;
++    }
++    static clearBaseURLOverride(network) {
++        delete BASEURL_OVERRIDES[network];
++    }
+     getTransactionReceipt(txid) {
+         return __awaiter(this, void 0, void 0, function* () {
+-            let uri;
+-            switch (this.network) {
+-                case 'MainNet':
+-                    uri = 'https://explorer.metrixcoin.com/api';
+-                    break;
+-                case 'TestNet':
+-                    uri = 'https://testnet-explorer.metrixcoin.com/api';
+-                    break;
+-                default:
+-                    return undefined;
++            const uri = resolveBaseURL(this.network);
++            if (uri == null) {
++                return undefined;
+             }
+             let receipt;
+             try {
+@@ -126,16 +135,9 @@ class APIProvider {
+         return __awaiter(this, void 0, void 0, function* () {
+             const iface = new ethers_1.Interface(abi);
+             const encoded = iface.encodeFunctionData(method, data).replace('0x', '');
+-            let uri = '';
+-            switch (this.network) {
+-                case 'MainNet':
+-                    uri = 'https://explorer.metrixcoin.com/api';
+-                    break;
+-                case 'TestNet':
+-                    uri = 'https://testnet-explorer.metrixcoin.com/api';
+-                    break;
+-                default:
+-                    return undefined;
++            const uri = resolveBaseURL(this.network);
++            if (uri == null) {
++                return undefined;
+             }
+             const raw = yield (yield (0, node_fetch_1.default)(`${uri}/contract/${contract.startsWith('0x')
+                 ? contract.slice(2).toLowerCase()
+@@ -167,16 +169,9 @@ class APIProvider {
+     }
+     balance(address) {
+         return __awaiter(this, void 0, void 0, function* () {
+-            let uri = '';
+-            switch (this.network) {
+-                case 'MainNet':
+-                    uri = 'https://explorer.metrixcoin.com/api';
+-                    break;
+-                case 'TestNet':
+-                    uri = 'https://testnet-explorer.metrixcoin.com/api';
+-                    break;
+-                default:
+-                    return BigInt(0);
++            const uri = resolveBaseURL(this.network);
++            if (uri == null) {
++                return BigInt(0);
+             }
+             const raw = yield (yield (0, node_fetch_1.default)(`${uri}/address/${address.startsWith('0x')
+                 ? address.slice(2).toLowerCase()
+@@ -194,18 +189,8 @@ class APIProvider {
+      */
+     getEventLogs(contract) {
+         return __awaiter(this, void 0, void 0, function* () {
+-            let uri = '';
++            const uri = resolveBaseURL(this.network) || '';
+             const logs = [];
+-            switch (this.network) {
+-                case 'MainNet':
+-                    uri = 'https://explorer.metrixcoin.com/api';
+-                    break;
+-                case 'TestNet':
+-                    uri = 'https://testnet-explorer.metrixcoin.com/api';
+-                    break;
+-                default:
+-                    break;
+-            }
+             const raw = yield (yield (0, node_fetch_1.default)(`${uri}/searchlogs?contract=${contract.startsWith('0x')
+                 ? contract.slice(2).toLowerCase()
+                 : contract.toLowerCase()}&limit=100&offset=0`)).json();

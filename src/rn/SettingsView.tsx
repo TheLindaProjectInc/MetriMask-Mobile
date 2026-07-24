@@ -4,8 +4,39 @@ import { Switch } from "react-native-paper";
 import DropDownPicker, { ItemType } from 'react-native-dropdown-picker';
 
 import { MC } from "../mc";
-import { useCommonStyles, dropDownPickerThemeProps, TitleBar, Card } from "./common";
+import { nim } from "../NetInfo";
+import { useCommonStyles, dropDownPickerThemeProps, TitleBar, Card, SimpleTextInput, SimpleButtonPair, InvalidMessage, ValidMessage } from "./common";
 import { useTheme } from "./theme";
+
+
+
+const EXPLORER_CHECK_TIMEOUT_MILLIS = 8000;
+
+function checkExplorerReachable(baseUrl : string) : Promise<boolean>
+    {
+    return new Promise<boolean>((resolve : (reachable : boolean) => any) : void =>
+        {
+        let settled = false;
+        const timeout = setTimeout(() : void =>
+            {
+            if (!settled) { settled = true; resolve(false); }
+            }, EXPLORER_CHECK_TIMEOUT_MILLIS);
+        fetch(`${ baseUrl }/api/info`).then((response : Response) : void =>
+            {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timeout);
+            resolve(response.ok);
+            })
+        .catch(() : void =>
+            {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timeout);
+            resolve(false);
+            });
+        });
+    }
 
 
 
@@ -33,6 +64,11 @@ export function SettingsView(props : SettingsViewProps) : JSX.Element
     const [ timeoutDDOpen, setTimeoutDDOpen ] = useState<boolean>(false);
     const [ timeoutDDValue, setTimeoutDDValue ] = useState<number>(actualInactivityTimeoutDDValue());
     const [ timeoutDDItems, setTimeoutDDItems ] = useState<ItemType<number>[]>(INACTIVITY_TIMEOUTS_DD);
+    const [ mainnetUrl, setMainnetUrl ] = useState<string>(nim().explorerBase("MainNet"));
+    const [ testnetUrl, setTestnetUrl ] = useState<string>(nim().explorerBase("TestNet"));
+    const [ explorerErrMsg, setExplorerErrMsg ] = useState<string>("");
+    const [ explorerSavedMsg, setExplorerSavedMsg ] = useState<string>("");
+    const [ checkingNetwork, setCheckingNetwork ] = useState<string>("");
 
     function actualInactivityTimeoutDDValue() : number
         {
@@ -50,6 +86,49 @@ export function SettingsView(props : SettingsViewProps) : JSX.Element
     function onSelectTimeout(item : ItemType<number>) : void
         {
         mc.setUserInactivityTimeoutMillis(60*1000*(item.value as number));
+        }
+
+    function isValidExplorerBaseUrl(url : string) : boolean
+        {
+        return /^https?:\/\/.+/i.test(url.trim());
+        }
+
+    function saveNetworkUrl(name : string, url : string) : void
+        {
+        const trimmed = url.trim().replace(/\/+$/, "");
+        setExplorerSavedMsg("");
+        if (!isValidExplorerBaseUrl(trimmed))
+            {
+            setExplorerErrMsg(`Enter a valid http(s) URL for ${ name }.`);
+            return;
+            }
+        setExplorerErrMsg("");
+        setCheckingNetwork(name);
+        checkExplorerReachable(trimmed).then((reachable : boolean) : void =>
+            {
+            setCheckingNetwork("");
+            if (!reachable)
+                {
+                setExplorerErrMsg(`Could not reach an Insight-compatible API at that ${ name } URL. Check the address and try again.`);
+                return;
+                }
+            nim().applyOverride(name, trimmed);
+            mc.storage.setExplorerOverrides({ ...mc.storage.explorerOverrides, [name]: trimmed });
+            setExplorerSavedMsg(`${ name } explorer URL saved.`);
+            setTimeout(() : void => setExplorerSavedMsg(""), 3000);
+            });
+        }
+
+    function resetNetworkUrl(name : string) : void
+        {
+        setExplorerErrMsg("");
+        setExplorerSavedMsg("");
+        nim().resetOverride(name);
+        const updated = { ...mc.storage.explorerOverrides };
+        delete updated[name];
+        mc.storage.setExplorerOverrides(updated);
+        if (name === "MainNet") setMainnetUrl(nim().explorerBase("MainNet"));
+        else                    setTestnetUrl(nim().explorerBase("TestNet"));
         }
 
     return (
@@ -77,6 +156,30 @@ export function SettingsView(props : SettingsViewProps) : JSX.Element
                         <View style={{ flex: 1 }}/>
                         <Switch value={ theme.isDarkMode } color={ theme.colors.darkPurple } onValueChange={ theme.setDarkMode }/>
                     </View>
+                </Card>
+                <View style={ { height: 24 } }/>
+                <Card>
+                    <Text style={{ color: theme.colors.black, fontWeight: "600" }}>Advanced: Custom Explorer Backend</Text>
+                    <Text style={{ color: theme.colors.middleGrey, fontSize: 12 }}>
+                        Point MainNet/TestNet at your own Insight-compatible explorer API instead of the official one.
+                        Saving checks that the address is reachable first. Explorer links and name resolution apply
+                        immediately; balance, transaction history, and sending take effect the next time you unlock
+                        this account.
+                    </Text>
+                    <View style={ { height: 16 } }/>
+                    <SimpleTextInput label="MainNet explorer base URL" value={ mainnetUrl } onChangeText={ setMainnetUrl }/>
+                    <View style={ { height: 24 } }/>
+                    <SimpleButtonPair
+                        left={ { text: checkingNetwork === "MainNet" ? "Checking..." : "Save", variant: "primary", disabled: checkingNetwork === "MainNet", onPress: () => saveNetworkUrl("MainNet", mainnetUrl) } }
+                        right={ { text: "Reset to default", variant: "secondary", disabled: checkingNetwork === "MainNet", onPress: () => resetNetworkUrl("MainNet") } }/>
+                    <View style={ { height: 24 } }/>
+                    <SimpleTextInput label="TestNet explorer base URL" value={ testnetUrl } onChangeText={ setTestnetUrl }/>
+                    <View style={ { height: 24 } }/>
+                    <SimpleButtonPair
+                        left={ { text: checkingNetwork === "TestNet" ? "Checking..." : "Save", variant: "primary", disabled: checkingNetwork === "TestNet", onPress: () => saveNetworkUrl("TestNet", testnetUrl) } }
+                        right={ { text: "Reset to default", variant: "secondary", disabled: checkingNetwork === "TestNet", onPress: () => resetNetworkUrl("TestNet") } }/>
+                    { explorerErrMsg.length ? <InvalidMessage text={ explorerErrMsg }/> : null }
+                    { explorerSavedMsg.length ? <ValidMessage text={ explorerSavedMsg }/> : null }
                 </Card>
             </View>
         </View>
